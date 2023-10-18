@@ -12,11 +12,9 @@ const router = useRouter()
 const category = ref('')
 const cityDropBox = ref(false)
 const filteredCities = ref([])
-
 const slugify = (str) => {
     return str ? str.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '') : '';
 }
-
 const title = (str) => {
     var words = str ? str.split('-') : '';
     for (var i = 0; i < words.length; i++) {
@@ -25,71 +23,65 @@ const title = (str) => {
     }
     return words ? words.join(' ') : '';
 }
-
 onMounted(() => {
     if (window !== 'undefined') {
         city.value = !localStorage.city ? localStorage.setItem('city', 'gurgaon') : title(localStorage.city)
     }
 })
-
-
-// const logout = () => {
-//     localStorage.auth = false
-//     auth.value.isAuthenticated = false
-// }
-
 const filterCities = () => {
+    // const checkCity = ref(false)
+    // $fetch(`/api/cities?name=${newCity}`, { method: 'get' }).then((res) => {
+    //     console.log(res)
+    //     if (res > 0) {
+    //         checkCity.value = true
+    //     }
+    // })
+
     if (city.value.length > 1) {
         cityDropBox.value = true;
         filteredCities.value = cities.value.filter(filterCities2)
     }
 }
-
 const filterCities2 = (item) => {
     return slugify(item.name).startsWith(slugify(city.value));
 }
-
 const selectCity = (newCity) => {
     category.value = ref(category);
-    cityDropBox.value = false;
-    setCity(newCity)
-    // store.setCity(newCity);
-    city.value = newCity;
-    if (typeof window !== 'undefined') {
+    cityDropBox.value = false;   
+        setCity(newCity)
         city.value = newCity
-        localStorage.city = slugify(newCity)
-        if (useRoute().params.city) {
-            const city = newCity
-            if (useRoute().params.query.includes('-in-')) {
-                const q = useRoute().params.query
-                const query = q.split('-in-')[0] + '-in-' + newCity
-                localStorage.category = category
-                useRouter().push('/' + slugify(city) + '/' + slugify(query))
+        if (typeof window !== 'undefined') {
+            city.value = newCity
+            localStorage.city = slugify(newCity)
+            if (useRoute().params.city) {
+                const city = newCity
+                if (useRoute().params.query.includes('-in-')) {
+                    const q = useRoute().params.query
+                    const query = q.split('-in-')[0] + '-in-' + newCity
+                    localStorage.category = category
+                    useRouter().push('/' + slugify(city) + '/' + slugify(query))
+                } else {
+                    useRouter().push('/')
+                }
             } else {
                 useRouter().push('/')
             }
-
-        } else {
-            useRouter().push('/')
-            // window.location.href = '/'
         }
-
     }
 
-}
+
+
 </script>
 
 <template>
     <div class="field">
         <p class="control">
-            <input v-model="city" class="input is-primary is-small  mt-2 mr-2" type="text" placeholder="Select Location"
-                autocomplete="off" @input="filterCities" v-if="auth" />
-                <input v-model="city" class="input is-primary   mt-1 mr-2" type="text" placeholder="Select Location"
-                autocomplete="off" @input="filterCities" v-else />
+                <input v-model="city" class="input is-primary is-small mt-2 mr-2" type="text" placeholder="Select Location"
+                autocomplete="off" @input="filterCities"/>
         </p>
         <div v-if="filteredCities && cityDropBox" class="navbar-dropdown">
 
-            <a v-for="item in filteredCities" :key="item._id" class="navbar-item mr-2" @click="selectCity(item.name)">
+            <a v-for="item in filteredCities" :key="item._id" class="navbar-item mr-2 mt-1" @click="selectCity(item.name)">
                 {{ item.name }}
             </a>
         </div>

@@ -1,0 +1,65 @@
+[{
+  "_id": {
+    "$oid": "64e0b4e80f005a0300d4c3a9"
+  },
+  "title": "About",
+  "slug": "about",
+  "content": "Dummy Content for About Page",
+  "page_title": "Obelcon | About",
+  "pege_content": "Dummy Meta Content for About Page",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": "2023-08-14T17:54:22.951+00:00"
+},
+{
+  "_id": {
+    "$oid": "64e0b4e80f005a0300d4c3aa"
+  },
+  "title": "Contact",
+  "slug": "contact",
+  "content": "Dummy Content for Contact Page",
+  "page_title": "Obelcon | Contact",
+  "pege_content": "Dummy Meta Content for Contact Page",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": "2023-08-14T17:54:22.951+00:00"
+},
+{
+  "_id": {
+    "$oid": "64e0b4e80f005a0300d4c3ab"
+  },
+  "title": "Terms",
+  "slug": "terms",
+  "content": "Dummy Content for Terms Page",
+  "page_title": "Obelcon | Terms",
+  "pege_content": "Dummy Meta Content for Terms Page",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": "2023-08-14T17:54:22.951+00:00"
+},
+{
+  "_id": {
+    "$oid": "64e0b4e80f005a0300d4c3ac"
+  },
+  "title": "Privacy",
+  "slug": "privacy",
+  "content": "Dummy Content for Privacy Page",
+  "page_title": "Obelcon | Privacy",
+  "pege_content": "Dummy Meta Content for Privacy Page",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": "2023-08-14T17:54:22.951+00:00"
+},
+{
+  "_id": {
+    "$oid": "64e0b4e80f005a0300d4c3ad"
+  },
+  "title": "Carrier",
+  "slug": "carrier",
+  "content": "Dummy Content for Carrier Page",
+  "page_title": "Obelcon | Carrier",
+  "pege_content": "Dummy Meta Content for Carrier Page",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": "2023-08-14T17:54:22.951+00:00"
+}]

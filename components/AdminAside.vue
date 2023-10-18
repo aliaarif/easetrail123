@@ -4,8 +4,8 @@ const setModuleAndAction = (mod, act, edit) => {
     setModule(mod)
     setAction(act)
     setEdit(edit)
+    if (mod == 'profile') { setItem(authDataStore.authData)}
 }
-const  isSidebarVisible = ref(true)
 
 </script>
 <template>
@@ -23,11 +23,39 @@ const  isSidebarVisible = ref(true)
                 </ul>
             </li>
             <li class="is-size-6">
+                <a @click="setModuleAndAction('cities', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'cities' && !edit ? 'is-active' : ''">
+                <i class="fa-solid fa-briefcase"></i> Cities </a>
+                <ul>
+                    <li class="is-size-6"><a @click="setModuleAndAction('cities', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'cities' && !edit ? 'is-active' : ''"> List </a></li>
+                </ul>
+            </li>
+            <li class="is-size-6">
+                <a @click="setModuleAndAction('localities', 'list', false), setDynamicTitle(title(module))" :class="module == 'localities' && !edit ? 'is-active' : ''">
+                <i class="fa-solid fa-briefcase"></i> Localities </a>
+                <ul>
+                    <li class="is-size-6"><a @click="setModuleAndAction('localities', 'list', false), setDynamicTitle(title(module))" :class="module == 'localities' && !edit ? 'is-active' : ''"> List </a></li>
+                </ul>
+            </li>
+            <li class="is-size-6">
+                <a @click="setModuleAndAction('categories', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'categories' && !edit ? 'is-active' : ''">
+                <i class="fa-solid fa-city"></i> Categories </a>
+                <ul>
+                    <li class="is-size-6"><a @click="setModuleAndAction('categories', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'categories' && !edit ? 'is-active' : ''"> List </a></li>
+                </ul>
+            </li>
+            <li class="is-size-6">
                 <a @click="setModuleAndAction('subcategories', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'subcategories' && !edit ? 'is-active' : ''">
                 <i class="fa fa-list-alt" aria-hidden="true"></i>  Subcategories </a>
                 <ul>
                     <li class="is-size-6"><a @click="setModuleAndAction('subcategories', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'subcategories' && !edit ? 'is-active' : ''"> List </a></li>
-                    <li class="is-size-6"><a @click="setModuleAndAction('subcategories', 'add-edit', true), setDynamicTitle('All ' + title(module))" :class="module == 'subcategories' && edit ? 'is-active' : ''"> Services </a></li>
+                </ul>
+            </li>
+            <li class="is-size-6">
+                <a>
+                <i class="fa fa-list-alt" aria-hidden="true"></i> Utilities </a>
+                <ul>
+                    <li class="is-size-6"><a @click="setModuleAndAction('services', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'services' && !edit ? 'is-active' : ''"> Services </a></li>
+                    <li class="is-size-6"><a @click="setModuleAndAction('keywords', 'list', false), setDynamicTitle('All ' + title(module))" :class="module == 'keywords' && !edit ? 'is-active' : ''"> Keywords </a></li>
                 </ul>
             </li>
             <li class="is-size-6">
@@ -67,11 +95,22 @@ const  isSidebarVisible = ref(true)
                 </ul>
             </li>
 
-            <li class="is-size-6">
-                <a @click="setModuleAndAction('profile', 'add-edit', true), setDynamicTitle('Profile Page')" :class="module == 'profile' && edit ? 'is-active' : ''">
+            <!-- <li class="is-size-6">
+                <a @click="
+                  setModuleAndAction('profile', 'add-edit', true),
+                    setDynamicTitle('Profile')
+                " :class="module == 'profile' && edit ? 'is-active' : ''">
                 <i class="fa fa-user" aria-hidden="true"></i> Profile </a>
-            </li>
+
+                
+            </li> -->
         </ul>
     </aside>
 </template>
+
+<style>
+.menu-list a.is-active {
+    background-color: hsl(171, 100%, 41%);
+}
+</style>
 

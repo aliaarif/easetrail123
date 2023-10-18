@@ -1,14 +1,10 @@
 import SubcategoryModel from "~~/server/models/Subcategory";
-
 export default defineEventHandler(async (event) => {
     const params = getQuery(event)
-
     try {
-        if (params.name) {
-            const meta = SubcategoryModel.findOne({ name: params.name }, {})
+        if (params.slug) {
+            const meta = SubcategoryModel.findOne({ slug: params.slug }, {})
             return meta
         }
-    } catch (error) {
-
-    }
+    } catch (error) {}
 })

@@ -7,7 +7,5 @@ export default defineEventHandler(async event => {
         res.status = 201
         res.message = 'New Page Generated successfully'
         return res
-    } catch (error) {
-        // console.log(error)
-    }
+    } catch (error) {}
 })

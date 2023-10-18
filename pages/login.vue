@@ -34,8 +34,8 @@ const handleLoginError = async () => {
 };
 
 useHead({
-  title: `Obelcon | Login Panel`,
-  meta: [{ name: "description", content: "Obelcon Login Page" }],
+  title: `Easetrail Login`,
+  meta: [{ name: "Login to Easetrail and list your business online for free.", content: "Welcome back! Please enter your credentials to access your account." }],
 });
 
 onMounted(() => {
@@ -53,7 +53,7 @@ onMounted(() => {
           <div
             class="column is-3-tablet is-3-desktop is-3-widescreen box has-text-centered mt-6 mb-4"
           >
-            <h1 class="is-size-5 mb-4">Login Panel</h1>
+            <h1 class="is-size-5 mb-4">Easetrail Login</h1>
             <GoogleSignInButton
               class="mt-1 mb-4"
               @success="handleLoginSuccess"

@@ -6,18 +6,17 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         setPageType('Subcategories')
         const { data: metaResults } = await useAsyncData('metaResults',
             () => {
-                return $fetch(`/api/getCategoriesMeta?name=${title(query)}`, {
+                return $fetch(`/api/getCategoriesMeta?slug=${query}`, {
                     method: 'get'
                 })
             })
         setMeta(metaResults)
-
     } else if (query.includes('-in-') && !query.includes('-biz-')) {
         setPageType('Businesses')
         const data = query.split('-in-')[0]
-        const { data: metaResults } = await useAsyncData('metaResults1',
+        const { data: metaResults } = await useAsyncData('metaResults',
             () => {
-                return $fetch(`/api/getSubcategoriesMeta?name=${title(data)}`, {
+                return $fetch(`/api/getSubcategoriesMeta?slug=${data}`, {
                     method: 'get'
                 })
             })

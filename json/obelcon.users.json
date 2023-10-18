@@ -1,0 +1,154 @@
+[{
+  "_id": {
+    "$oid": "64e974e4c16eb22f96031c3f"
+  },
+  "name": "Admin",
+  "email": "admin@example.com",
+  "password": "$2a$04$oqAIgqWoZ60ZtpLnJXaLsew5sT4YuMIPf5kqKfUt4Bhh42W9w10Z.",
+  "gender": "Male",
+  "phone": {
+    "$numberLong": "8005794205"
+  },
+  "address": "52/12, Kirti Nager",
+  "locality": "Sector 15",
+  "city": "Gurugram",
+  "state": "Haryana",
+  "pin": 122001,
+  "role": "Admin",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": {
+    "$date": "2023-09-22T17:53:17.130Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "64e974e4c16eb22f96031c40"
+  },
+  "name": "Quality Checker",
+  "email": "qc@example.com",
+  "password": "$2a$04$oqAIgqWoZ60ZtpLnJXaLsew5sT4YuMIPf5kqKfUt4Bhh42W9w10Z.",
+  "gender": "Male",
+  "phone": "8005794205",
+  "address": "52/12, Kirti Nager",
+  "locality": "Sector 15",
+  "city": "Gurugram",
+  "state": "Haryana",
+  "pin": "122001",
+  "role": "QC",
+  "status": "Inactive",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": {
+    "$date": "2023-09-24T20:04:02.670Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "64e974e4c16eb22f96031c41"
+  },
+  "name": "Staff",
+  "email": "staff@example.com",
+  "password": "$2a$04$oqAIgqWoZ60ZtpLnJXaLsew5sT4YuMIPf5kqKfUt4Bhh42W9w10Z.",
+  "gender": "Male",
+  "phone": "8005794205",
+  "address": "52/12, Kirti Nager",
+  "locality": "Sector 15",
+  "city": "Gurugram",
+  "state": "Haryana",
+  "pin": "122001",
+  "role": "Staff",
+  "status": "Active",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": {
+    "$date": "2023-09-22T17:53:15.843Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "64e974e4c16eb22f96031c43"
+  },
+  "name": "Vendor",
+  "email": "vendor@example.com",
+  "password": "$2a$04$oqAIgqWoZ60ZtpLnJXaLsew5sT4YuMIPf5kqKfUt4Bhh42W9w10Z.",
+  "gender": "Male",
+  "phone": "8005794205",
+  "address": "52/12, Kirti Nager",
+  "locality": "Sector 15",
+  "city": "Gurugram",
+  "state": "Haryana",
+  "pin": "122001",
+  "role": "Vendor",
+  "status": "Inactive",
+  "createdAt": "2023-08-14T17:54:22.951+00:00",
+  "updatedAt": {
+    "$date": "2023-09-24T20:04:00.758Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "650bdd5e14696557672267d7"
+  },
+  "name": "Pankaj Sehoriya 14",
+  "email": "pankajyadav562@gmail.com",
+  "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLU4uq0Fu8jYtCBS_CAPcXxilanQ-zyBiKrt1_l6febwc0=s96-c",
+  "role": "Admin",
+  "lock": true,
+  "createdAt": {
+    "$date": "2023-09-21T06:06:22.921Z"
+  },
+  "updatedAt": {
+    "$date": "2023-09-24T20:04:08.314Z"
+  },
+  "__v": 0,
+  "city": "Churu",
+  "state": "Rajasthan",
+  "status": "Inactive"
+},
+{
+  "_id": {
+    "$oid": "650be46346102f56dc16d2dd"
+  },
+  "name": "Varun sharma 1",
+  "email": "varunsharma960960@gmail.com",
+  "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIEoKLhn0TJtgKyvQMcLrJjJMt5sxGJrffYnbcCLR5Z=s96-c",
+  "role": "QC",
+  "lock": true,
+  "createdAt": {
+    "$date": "2023-09-21T06:36:19.384Z"
+  },
+  "updatedAt": {
+    "$date": "2023-09-24T20:04:10.374Z"
+  },
+  "__v": 0,
+  "status": "Inactive",
+  "address": "5",
+  "city": "Rewari",
+  "locality": "2",
+  "phone": 4,
+  "pin": 6,
+  "state": "Haryana"
+},
+{
+  "_id": {
+    "$oid": "650d3a9172c620d7ab36ad0a"
+  },
+  "name": "MOHAMMED Aarif",
+  "email": "ali.aliaarif@gmail.com",
+  "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJRWDyb67lyuGOE6IRRL8lvkxxDxoy2ray91TFMugN5_Mo=s96-c",
+  "role": "Admin",
+  "lock": false,
+  "createdAt": {
+    "$date": "2023-09-22T06:56:17.457Z"
+  },
+  "updatedAt": {
+    "$date": "2023-09-25T09:08:04.451Z"
+  },
+  "__v": 0,
+  "address": "2",
+  "city": "Gurugram",
+  "locality": "3",
+  "phone": 1,
+  "pin": 122,
+  "state": "Haryana",
+  "status": "Active"
+}]

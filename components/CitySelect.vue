@@ -1,14 +1,10 @@
-
 <script setup>
 import { useAuthDataStore } from "@/stores/auth-data";
 const authDataStore = useAuthDataStore();
-const { city, setCity, auth, item, module } = useCommon()
-
-
+const { auth, item, module } = useCommon()
 const slugify = (str) => {
     return str ? str.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '') : '';
 }
-
 const title = (str) => {
     var words = str ? str.split('-') : '';
     for (var i = 0; i < words.length; i++) {
@@ -17,8 +13,6 @@ const title = (str) => {
     }
     return words ? words.join(' ') : '';
 }
-
-
 const { data: cities } = await useAsyncData('cities',
     () => {
         return $fetch(`/api/cities`, {
@@ -26,10 +20,8 @@ const { data: cities } = await useAsyncData('cities',
         })
     },
 )
-
 const cityDropBox = ref(false)
 const filteredCities2 = ref([])
-
 const selCity = ref('')
 const filterCities2 = (selectedCity) => {
     selCity.value = selectedCity
@@ -37,20 +29,14 @@ const filterCities2 = (selectedCity) => {
         cityDropBox.value = true;
         filteredCities2.value = cities.value.filter(filterCities22)
     }
-
 }
-
 const filterCities22 = (item) => {
     return slugify(item.name).startsWith(slugify(selCity.value));
 }
-
-
 const selectCity2 = async (newCity) => {
     item.value.city = newCity
     authDataStore.authData.city = newCity
-    
     cityDropBox.value = false;
-    
     const { data: stateName } = await useAsyncData('stateName',
         () => {
             return $fetch(`/api/getStateName?name=${newCity}`, {
@@ -60,12 +46,10 @@ const selectCity2 = async (newCity) => {
     item.value.state = stateName.value.state
 }
 const disabledFleg = ref(authDataStore.authData.lock)
-// alert(disabledFleg.value)
 </script>
-
 <template>
     <section>
-        <input v-model="auth.city" class="input is-primary is-small" type="text" placeholder="Select Location 1"
+        <input v-model="auth.city" class="input is-primary is-small" type="text" placeholder="Select Location"
             autocomplete="off" @input="filterCities2(auth.city)" v-if="module == 'profile' && disabledFleg" :disabled="disabledFleg == true ? disabled : ''"/>
         <input class="input is-primary is-small" type="text" placeholder="Select Location 2"
             autocomplete="off"  v-else-if="module == 'profile' && auth.lock" :disabled="module == 'profile' ? 'disabled' : ''"/>

@@ -1,0 +1,19 @@
+[{
+  "_id": {
+    "$oid": "64e0b4f80f005a0300d4c3b1"
+  },
+  "name": "Aarif Ali Chauhan",
+  "phone": {
+    "$numberLong": "8005794205"
+  },
+  "email": "ali.aliaarif@gmail.com",
+  "subject": "Want to become a CTO",
+  "message": "Want to become a CTO and want 25% of the shares",
+  "status": "Awaiting",
+  "createdAt": {
+    "$date": "2023-08-14T17:54:22.951Z"
+  },
+  "updatedAt": {
+    "$date": "2023-09-21T07:28:27.337Z"
+  }
+}]

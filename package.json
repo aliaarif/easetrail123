@@ -1,8 +1,9 @@
 {
   "name": "nuxt-app",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
+    "start": "node .output/server/index.mjs",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -19,9 +20,15 @@
     "@formkit/nuxt": "^1.1.0",
     "@formkit/themes": "^1.1.0",
     "@pinia/nuxt": "^0.4.11",
+    "@tiptap/core": "^2.1.11",
+    "@tiptap/extension-document": "^2.1.11",
+    "@tiptap/extension-paragraph": "^2.1.11",
+    "@tiptap/extension-text": "^2.1.11",
+    "@tiptap/vue-3": "^2.1.11",
     "bulma": "^0.9.4",
     "crypto-js": "^4.1.1",
     "google-auth-library": "^9.0.0",
+    "jsdom": "^22.1.0",
     "leaflet": "^1.9.4",
     "mongoose": "^7.3.2",
     "nuxt-vue3-google-signin": "^0.0.9",
@@ -32,6 +39,6 @@
     "vue": "latest"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }

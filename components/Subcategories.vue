@@ -6,7 +6,7 @@ const props = defineProps({
 </script>
 <template>
   <section>
-    <h1 class="title is-1">{{ props.propsObj.meta.page_title }} in {{ props.propsObj.title(props.propsObj.city) }}</h1>
+    <h3 class="title mt-6 mb-6">{{ props.propsObj.meta.page_title }} in {{ props.propsObj.title(props.propsObj.city) }}</h3>
     <div class="columns is-multiline is-mobile is-variable is-2-tablet mt-4 mb-6">
       <div
         class="column is-6-mobile is-4-tablet is-4-desktop is-3-widescreen"

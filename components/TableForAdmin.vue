@@ -1,78 +1,114 @@
 <script setup>
+import { useDropdownStore } from "@/stores/dropdown";
+import { useItemStore } from "@/stores/item";
+const dropdownStore = useDropdownStore();
+const itemStore = useItemStore();
 
-const { searchTerms, title, module, dynamicTitle, setDynamicTitle,  edit, setModule, setAction, setEdit, td, rows, search, setItem, pageNo, setPageNo, setPageLimit, pageLimit, showDateTime } = useCommon()
-// const filterSearch = () => {
-
-//     $fetch(`/api/modules?name=${module.value}&pageLimit=${pageLimit.value}&searchTerms=${searchTerms.value}`, {
-//         method: 'get'
-//     }).then((res) => {
-//         rows.value = res
-//     })
-
-// }
-
-// const searchFunction = (item) => {
-//     return item.category.startsWith(searchTerms.value);
-// }
-
-// onUnmounted(() => {
-//       alert(1)
-//     });
-
+const { searchTerms, title, module, setDynamicTitle, setCities2,  edit, setModule, setAction, setEdit, td, rows, search, item, setItem, pageNo, setPageNo, setPageLimit, pageLimit, showDateTime } = useCommon()
 const changeStatus = (mod, col, val, update) => {
-    const { data:res } = useFetch(`/api/save/status?mod=${mod}&col=${col}&val=${val}&update=${update}`, {
-        method: 'post'
-    })
+    const { data:res } = useFetch(`/api/save/status?mod=${mod}&col=${col}&val=${val}&update=${update}`, { method: 'post' })
 }
-const changeFormValues = (item) => {
+const deleteItem = (mod, id) => {
+  const { data:res } = useFetch(`/api/save/delete?mod=${mod}&id=${id}`, { method: 'post' })
+  // rows.value = rows.value.filter(item => item._id !== index)
+  const childElement = document.querySelector('#ID'+id)
+  const grandparentElement = childElement.parentNode.parentNode
+  grandparentElement.remove()
+}
+const changeFormValues = async (item) => {
     setItem(item)
     setAction('add-edit')
     setEdit(true)  
+  if (module.value == 'localities') {
+    dropdownStore.dropdown.locality = item.name
+  } else if (module.value == 'businesses') {
+    const { data: cities3 } = await useAsyncData('cities3',
+    () => {
+        return $fetch(`/api/cities?state=${item.business_state}`, {
+            method: 'get'
+        })
+    },
+    )
+    setCities2(cities3.value)
+  }else {
+    dropdownStore.dropdown.city = item.name
+  }
 }
-
-
 const loadCount = (mod, countTerm) => {
     const { data:res } =  useFetch(`/api/count?mod=${mod}&countTerm=${countTerm}`, {
         method: 'get'
     })
     return res.value
 }
-
-
-const loadCities = (item) => {
-    setModule('cities')
-    setItem(item)
-    setAction('edit')
-    setEdit(false) 
-}
-
 const pagePlus = () => {
     setPageNo(pageNo + 1)
 }
-
 const pageMinus = () => {
     setPageNo(pageNo - 1)
 }
-
 const changePageLimit = (event) => {
     setPageLimit(event.target.value)
     setModule(module.value)
 }
+const fetchedCities = ref([])
+const fetchedLocalities = ref([])
+// if (module.value == 'localities') {
+  const { data: states } = await useAsyncData('states',
+    () => {
+        return $fetch(`/api/states`, {
+            method: 'get'
+        })
+    },
+  )
+  const { data: cities } = await useAsyncData('cities',
+      () => {
+          return $fetch(`/api/cities?state=${itemStore.item.state}`, {
+              method: 'get'
+          })
+      },
+  )
+  fetchedCities.value = cities.value
+  // const { data: localities } = await useAsyncData('localities',
+  //     () => {
+  //         return $fetch(`/api/localities?city=${itemStore.item.city}`, {
+  //             method: 'get'
+  //         })
+  //     },
+  // )
+  // fetchedLocalities.value = localities.value
+  const loadCities = async (val) => {
+    const { data: cities } = await useAsyncData('cities',
+      () => {
+          return $fetch(`/api/cities?state=${val}`, {
+              method: 'get'
+          })
+      },
+    )
+    fetchedCities.value = cities.value
+  }
+// }
 
+const loadLocalities = async (val) => {
+  const { data: localities } = await useAsyncData('localities',
+    () => {
+        return $fetch(`/api/localities?city=${val}`, {
+            method: 'get'
+        })
+    },
+  )
+  fetchedLocalities.value = localities.value
+}
 </script>
-
 <template>
-
-    <section>
-    
+    <section v-if="module != 'localities'">
         <div class="field has-addons">
             <p class="control">
                 <span class="select">
                     <select @change="changePageLimit">
+                        <option value="15">Show 10 </option>
+                        <option value="30">Show 20 </option>
                         <option value="50">Show 50 </option>
-                        <option value="200">Show 200 </option>
-                        <option value="1000">Show 1000 </option>
-                        <option value="5000">Show 5000 </option>
+                        <option value="100">Show 100 </option>
                     </select>
                 </span>
             </p>
@@ -80,16 +116,60 @@ const changePageLimit = (event) => {
                 <input type="text" placeholder="Search" class="input" v-model="searchTerms" @input="filterSearch">
             </p>
         </div>
-        <div class="table-container">
+        <div class="table-container x-overflow-hidden">
             <table class="table is-small is-bordered is-striped is-hoverable is-fullwidth">
                 <thead>
-                    <th v-for="(item,index) in td" :key="index">
-                        {{ title(item) }}
+                    <th v-for="(item,index) in td" :key="index"  >
+                       <span :class="{'is-pulled-right': item == 'Action'}" >{{ title(item) }}</span> 
                     </th>
                 </thead>
                 <tbody>
                     <tr v-for="(item1, index) in rows" :key="index">
                         <td v-for="item2 in td" :key="item2">
+
+                            <div v-if="module == 'states'">
+                                {{ item2 == 'Name' ? item1.name : '' }}
+                                <!-- <a @click="loadCities(item1), setDynamicTitle(item1.name+' Cities')">{{ item2 == 'Cities' ? loadCount('CityModel', item1.name) : '' }} </a>  -->
+                            </div>
+
+                            <div v-if="module == 'cities'">
+                                {{ item2 == 'State' ? item1.state : '' }}
+                                {{ item2 == 'City' ? item1.name : '' }}
+                                {{ item2 == 'Slug' ? item1.slug : '' }}
+                            </div>
+
+                            <!-- <div v-if="module == 'localities'">
+                                {{ item2 == 'State' ? item1.state : '' }}
+                                {{ item2 == 'City' ? item1.city : '' }}
+                                {{ item2 == 'Locality' ? item1.name : '' }}
+                            </div> -->
+
+                            <div v-if="module == 'categories'">
+                                {{ item2 == 'Name' ? item1.name : '' }}
+                                {{ item2 == 'Slug' ? item1.slug : '' }}
+                                <!-- <a @click="loadCities(item1), setDynamicTitle(item1.name+' Cities')">{{ item2 == 'Cities' ? loadCount('CityModel', item1.name) : '' }} </a>  -->
+                            </div>
+
+                            <div v-if="module == 'subcategories'">
+                                {{ item2 == 'Category' ? item1.category : '' }}
+                                {{ item2 == 'Subcategory' ? item1.name : '' }}
+                                 {{ item2 == 'Slug' ? item1.slug : '' }}
+                                <!-- {{ item2 == 'Businesses' ? loadCount('BusinessModel', item1.name) : '' }} -->
+                            </div>
+
+                            <div v-if="module == 'services'">
+                              {{ item2 == 'Subcategory' ? item1.subcategory : '' }}
+                              {{ item2 == 'Service' ? item1.name : '' }}
+                              {{ item2 == 'Slug' ? item1.slug : '' }}
+                                <!-- <a @click="loadCities(item1), setDynamicTitle(item1.name+' Cities')">{{ item2 == 'Cities' ? loadCount('CityModel', item1.name) : '' }} </a>  -->
+                            </div>
+
+                            <div v-if="module == 'keywords'">
+                                {{ item2 == 'Subcategory' ? item1.subcategory : '' }}
+                                {{ item2 == 'Keyword' ? item1.name : '' }}
+                                {{ item2 == 'Slug' ? item1.slug : '' }}
+                                <!-- <a @click="loadCities(item1), setDynamicTitle(item1.name+' Cities')">{{ item2 == 'Cities' ? loadCount('CityModel', item1.name) : '' }} </a>  -->
+                            </div>
 
                             <div v-if="module == 'businesses'">
                                 <span v-if="item2 == 'id'">{{ item1._id.substr(16) }}</span>
@@ -99,15 +179,15 @@ const changePageLimit = (event) => {
                                 {{ item2 == 'Content By' ? item1.updated_by : '' }}
                                 {{ item2 == 'Approved By' ? item1.approved_by : '' }}
                                 <span v-if="item2 == 'Date'">
-                                    <div class="block">
+                                    <!-- <div class="block"> -->
                                         <span class="tag is-primary is-small ml-1">
                                             {{ showDateTime(item1.createdAt) }} 
                                         </span>
-                                        <br>
+                                        <!-- <br>
                                         <span class="tag is-danger is-small ml-1">
                                             {{ showDateTime(item1.updatedAt) }} 
-                                        </span>
-                                    </div>
+                                        </span> -->
+                                    <!-- </div> -->
                                 </span>
                             </div>
 
@@ -116,13 +196,6 @@ const changePageLimit = (event) => {
                                 {{ item2 == 'Email' ? item1.email : '' }}
                                 {{ item2 == 'Role' ? item1.role : '' }}
                                 {{ item2 == 'City' ? item1.city : '' }}
-                            </div>
-
-                            <div v-if="module == 'scripts'">
-                                {{ item2 == 'Name' ? item1.name : '' }}
-                                {{ item2 == 'Type' ? item1.type : '' }}
-                                {{ item2 == 'Positions' ? item1.positions : '' }}
-                                {{ item2 == 'Body' ? item1.body : '' }}
                             </div>
 
                             <div v-if="module == 'leads'">
@@ -137,10 +210,10 @@ const changePageLimit = (event) => {
                                         <span class="tag is-primary is-small ml-1">
                                             {{ showDateTime(item1.createdAt) }} 
                                         </span>
-                                        <br>
+                                        <!-- <br>
                                         <span class="tag is-danger is-small ml-1">
                                             {{ showDateTime(item1.updatedAt) }} 
-                                        </span>
+                                        </span> -->
                                     </div>
                                 </span>
                             </div>
@@ -156,30 +229,21 @@ const changePageLimit = (event) => {
                                         <span class="tag is-primary is-small ml-1">
                                             {{ showDateTime(item1.createdAt) }} 
                                         </span>
-                                        <br>
+                                        <!-- <br>
                                         <span class="tag is-danger is-small ml-1">
                                             {{ showDateTime(item1.updatedAt) }} 
-                                        </span>
+                                        </span> -->
                                     </div>
                                 </span>
                             </div>
 
-                            <div v-if="module == 'subcategories'">
-                                {{ item2 == 'Category' ? item1.category : '' }}
-                                {{ item2 == 'Subcategory' ? item1.name : '' }}
-                                {{ item2 == 'Businesses' ? loadCount('BusinessModel', item1.name) : '' }}
-                            </div>
-
-                            <div v-if="module == 'states'">
+                            <div v-if="module == 'scripts'">
                                 {{ item2 == 'Name' ? item1.name : '' }}
-                                <a @click="loadCities(item1), setDynamicTitle(item1.name+' Cities')">{{ item2 == 'Cities' ? loadCount('CityModel', item1.name) : '' }} </a> 
+                                {{ item2 == 'Type' ? item1.type : '' }}
+                                {{ item2 == 'Positions' ? item1.positions : '' }}
+                                {{ item2 == 'Body' ? item1.body : '' }}
                             </div>
-
-                            <div v-if="module == 'cities'">
-                                {{ item2 == 'Name' ? item1.name : '' }}
-                            </div>
-
-
+                            
                             <span v-if="item2 == 'Status' && module == 'leads'">
                               <div class="block">
                                   <span class="tag is-primary is-small ml-1">
@@ -204,6 +268,10 @@ const changePageLimit = (event) => {
                                 <input :id="`${item1._id}`" type="checkbox"  
                                 @click="changeStatus(module, 'name', item1.name, item1.status == 'Active' ? 'Inactive' : 'Active')"  
                                 :checked="item1.status == 'Active' ? true : false" v-else-if="module == 'cities'">
+
+                                <input :id="`${item1._id}`" type="checkbox"  
+                                @click="changeStatus(module, 'name', item1.name, item1.status == 'Active' ? 'Inactive' : 'Active')"  
+                                :checked="item1.status == 'Active' ? true : false" v-else-if="module == 'categories'">
                               
                                 <input :id="`${item1._id}`" type="checkbox"  
                                 @click="changeStatus(module, 'business_name', item1.business_name, item1.status == 'Active' ? 'Inactive' : 'Active')"  
@@ -213,7 +281,15 @@ const changePageLimit = (event) => {
 
                            
                            
-                            <button class=" button is-small" v-if="item2 == 'Action'" @click="changeFormValues(item1), setDynamicTitle('Edit ' + title(module))">
+                           
+
+                            <button class=" button is-small is-pulled-right ml-1" v-if="item2 == 'Action'" @click="deleteItem(module, item1._id)" :id="'ID'+item1._id">
+                                <span class=" icon is-small">
+                                  <i class="fa fa-trash  is-dirty" aria-hidden="true"></i>
+                                </span>
+                            </button>
+
+                            <button class=" button is-small is-pulled-right mr-1" v-if="item2 == 'Action'" @click="changeFormValues(item1), setDynamicTitle('Edit ' + title(module))">
                                 <span class=" icon is-small">
                                     <i class="fas fa-edit"></i>
                                 </span>
@@ -223,21 +299,74 @@ const changePageLimit = (event) => {
                     </tr>
                 </tbody>
             </table>
+            <nav class="pagination is-small" role="navigation" aria-label="pagination">
+              <a class="pagination-previous" @click="pagePlus">Previous</a>
+              <a class="pagination-next" @click="pageMinus">Next page</a>
+              <ul class="pagination-list">
+                  <li><a class="pagination-link" aria-label="Goto page 1">1</a></li>
+                  <li><span class="pagination-ellipsis">&hellip;</span></li>
+                  <li><a class="pagination-link" aria-label="Goto page 45">45</a></li>
+                  <li><a class="pagination-link is-current" aria-label="Page 46" aria-current="page">46</a></li>
+                  <li><a class="pagination-link" aria-label="Goto page 47">47</a></li>
+                  <li><span class="pagination-ellipsis">&hellip;</span></li>
+                  <li><a class="pagination-link" aria-label="Goto page 86">86</a></li>
+              </ul>
+            </nav>
         </div>
-        <nav class="pagination is-small" role="navigation" aria-label="pagination" v-if="rows.length > 50">
-            <a class="pagination-previous" @click="pagePlus">Previous</a>
-            <a class="pagination-next" @click="pageMinus">Next page</a>
-
-            <ul class="pagination-list">
-                <li><a class="pagination-link" aria-label="Goto page 1">1</a></li>
-                <li><span class="pagination-ellipsis">&hellip;</span></li>
-                <li><a class="pagination-link" aria-label="Goto page 45">45</a></li>
-                <li><a class="pagination-link is-current" aria-label="Page 46" aria-current="page">46</a></li>
-                <li><a class="pagination-link" aria-label="Goto page 47">47</a></li>
-                <li><span class="pagination-ellipsis">&hellip;</span></li>
-                <li><a class="pagination-link" aria-label="Goto page 86">86</a></li>
+    </section>
+     <section class="x-overflow-hidden y-overflow-hidden" v-else>
+      <div class="columns mt-1 ">
+          <div class="column  is-one-quarter">
+          <aside class="menu" style="box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"  >
+            <ul class="menu-list">
+                <a>
+                <i class="fa-solid fa-city"></i> States </a>
+                <ul>
+                    <li class="is-size-6 mb-2"  v-for="(state, index) in states" :key="index" v-if="states">
+                      <a @click="loadCities(state.name)"> {{ state.name }} </a>
+                    </li>
+                </ul>
             </ul>
-        </nav>
+          </aside>
+          </div>
+          <div class="column is-one-quarter">
+            <aside class="menu" style="box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"  >
+              <ul class="menu-list">
+                <a>
+                <i class="fa-solid fa-city"></i> Cities </a>
+                <ul>
+                    <li class="is-size-6 mb-2"  v-for="(city, index) in fetchedCities" :key="index"  >
+                      <a @click="loadLocalities(city.name)"> {{ city.name }} </a>
+                    </li>
+                </ul>
+            </ul>
+          </aside>
+          </div>
+          <div class="column is-one-quarter">
+            <aside class="menu" style="box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"  >
+              <ul class="menu-list">
+                <a>
+                <i class="fa-solid fa-city"></i> Localities </a>
+                <ul>
+                    <li class="is-size-6 mb-2"  v-for="(locality, index) in fetchedLocalities" :key="index" >
+                 
+                    <a class="custom-line-height"> 
+                                <span class="is-pulled-left">{{ locality.name }} </span>
+                                
+                                <span class="is-pulled-right icon is-small" @click="deleteItem(module, locality._id)" :id="'ID'+locality._id">
+                                  <i class="fa fa-trash" aria-hidden="true"></i>
+                                </span>
+                                <span class="is-pulled-right icon is-small mr-2" @click="changeFormValues(locality), setDynamicTitle('Edit ' + title(module))">
+                                    <i class="fas fa-edit"></i>
+                                </span>
+                            </a>
+                      
+                    </li>
+                </ul>
+            </ul>
+          </aside>
+          </div>
+      </div>
     </section>
 </template>
 <style>
@@ -437,5 +566,46 @@ input + .switch.is-large label {
 }
 .switch.is-large input:checked ~ label::before {
   left: 3.25rem;
+}
+
+.x-overflow-hidden {
+  overflow-x: hidden;
+}
+.y-overflow-hidden {
+  overflow-y: hidden;
+}
+
+.is-state-custom{
+  width:15% !important
+}
+.is-city-custom{
+  width:25% !important
+}
+
+.is-locality-custom{
+  width:60% !important
+}
+.custom-line-height {
+  height: 35px;  /* Adjust this value to your preference */
+}
+
+.dirty{
+    border: 1px solid #f14668;
+}
+.good{
+    border: 1px solid #00c4a7;
+}
+.icon-dirty{
+    color: #f14668;;
+}
+
+.icon-good{
+    color: #00c4a7;
+}
+.text-dirty{
+    color: #f14668;
+}
+.text-good{
+    color: #00c4a7;
 }
 </style>

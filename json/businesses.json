@@ -1,0 +1,509 @@
+[
+  {
+    "_id": {
+      "$oid": "651172e71eb9dc823f785215"
+    },
+    "business_name": "Yuvika Tour And Travels 1",
+    "business_slug": "yuvika-tour-and-travels-1-sector-15-gurgaon",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Self Drive Car Rental"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "1st Floor Dada Mangeram Market",
+    "business_locality": "Sector 15",
+    "business_city": "Gurugram",
+    "business_state": "Haryana",
+    "business_pin": 122001,
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": {
+      "$numberLong": "919991210207"
+    },
+    "business_ownership": "Unverified",
+    "business_email": "email@easetrail.com",
+    "business_website": "https://www.easetrail.com/",
+    "business_social": {
+      "facebook": "https://www.easetrail.com/",
+      "instagram": "https://www.easetrail.com/",
+      "youtube": "https://www.easetrail.com/"
+    },
+    "business_faqs": [
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      }
+    ],
+    "business_description": "Yuvika Tour And Travels 1",
+    "business_images": [],
+    "created_by": "staff@example.com",
+    "updated_by": "qc@example.com",
+    "approved_by": "addmin@example.com",
+    "page_title": "Top Car Rental Services",
+    "page_content": "Make a car rental booking in cityName today, with trusted car rental service providers for local and outstations with driver or self drive option at affordable rates, and easy document formalities. Also our vendor caters a wide range of travel-related services including minibus for hire, tempo for hire, taxi services in different segments from economy to luxury cars and more. (Website) connect you with the service provider around you that offer Car Rental services in cityName.",
+    "status": "Active",
+    "createdAt": "2023-08-14T17:54:22.951+00:00",
+    "updatedAt": {
+      "$date": "2023-09-26T00:51:11.258Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "651172e71eb9dc823f785216"
+    },
+    "business_name": "Yuvika Tour And Travels 2",
+    "business_slug": "yuvika-tour-and-travels-2-sector-15-gurgaon",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Self Drive Car Rental",
+      "Car Rental For Outstation",
+      "Monthly Car rental",
+      "Luxury Car Rental",
+      "Commercial Vehicle Rental Services"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "1st Floor Dada Mangeram Market",
+    "business_locality": "Sector 15",
+    "business_city": "Rewari",
+    "business_state": "Haryana",
+    "business_pin": "122001",
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": "+919991210207",
+    "business_ownership": "Unverified",
+    "business_email": "email@easetrail.com",
+    "business_website": "https://www.easetrail.com/",
+    "business_social": {
+      "facebook": "https://www.easetrail.com/",
+      "instagram": "https://www.easetrail.com/",
+      "youtube": "https://www.easetrail.com/"
+    },
+    "business_faqs": [
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      }
+    ],
+    "business_description": "Yuvika Tour And Travels 2",
+    "business_images": [],
+    "created_by": "staff@example.com",
+    "updated_by": "qc@example.com",
+    "approved_by": "addmin@example.com",
+    "page_title": "Top Car Rental Services",
+    "page_content": "Make a car rental booking in cityName today, with trusted car rental service providers for local and outstations with driver or self drive option at affordable rates, and easy document formalities. Also our vendor caters a wide range of travel-related services including minibus for hire, tempo for hire, taxi services in different segments from economy to luxury cars and more. (Website) connect you with the service provider around you that offer Car Rental services in cityName.",
+    "status": "Active",
+    "createdAt": "2023-08-14T17:54:22.951+00:00",
+    "updatedAt": "2023-08-14T17:54:22.951+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "651172e71eb9dc823f785217"
+    },
+    "business_name": "Yuvika Tour And Travels 3",
+    "business_slug": "yuvika-tour-and-travels-3-sector-15-gurgaon",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Self Drive Car Rental",
+      "Car Rental For Outstation",
+      "Monthly Car rental",
+      "Luxury Car Rental",
+      "Commercial Vehicle Rental Services"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "HN.550 Suncity Township",
+    "business_locality": "Sector 35",
+    "business_city": "Rohtak",
+    "business_state": "Haryana",
+    "business_pin": "124021",
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": "+919991210207",
+    "business_ownership": "Unverified",
+    "business_email": "email@easetrail.com",
+    "business_website": "https://www.easetrail.com/",
+    "business_social": {
+      "facebook": "https://www.easetrail.com/",
+      "instagram": "https://www.easetrail.com/",
+      "youtube": "https://www.easetrail.com/"
+    },
+    "business_faqs": [
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      }
+    ],
+    "business_description": "Yuvika Tour And Travels 3",
+    "business_images": [],
+    "created_by": "staff@example.com",
+    "updated_by": "qc@example.com",
+    "approved_by": "addmin@example.com",
+    "page_title": "Top Car Rental Services",
+    "page_content": "Make a car rental booking in cityName today, with trusted car rental service providers for local and outstations with driver or self drive option at affordable rates, and easy document formalities. Also our vendor caters a wide range of travel-related services including minibus for hire, tempo for hire, taxi services in different segments from economy to luxury cars and more. (Website) connect you with the service provider around you that offer Car Rental services in cityName.",
+    "status": "Active",
+    "createdAt": "2023-08-14T17:54:22.951+00:00",
+    "updatedAt": "2023-08-14T17:54:22.951+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "651172e71eb9dc823f785218"
+    },
+    "business_name": "Yuvika Tour And Travels 4",
+    "business_slug": "yuvika-tour-and-travels-4-sector-15-gurgaon",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Self Drive Car Rental",
+      "Car Rental For Outstation",
+      "Monthly Car rental",
+      "Luxury Car Rental",
+      "Commercial Vehicle Rental Services"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "1st Floor Main Market",
+    "business_locality": "Sector 14",
+    "business_city": "Gurugram",
+    "business_state": "Haryana",
+    "business_pin": "122001",
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": "+919991210207",
+    "business_email": "email@easetrail.com",
+    "business_website": "https://www.easetrail.com/",
+    "business_social": {
+      "facebook": "https://www.easetrail.com/",
+      "instagram": "https://www.easetrail.com/",
+      "youtube": "https://www.easetrail.com/"
+    },
+    "business_faqs": [
+      {
+        "q": "gfd",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      }
+    ],
+    "business_description": "Yuvika Tour And Travels 4",
+    "business_images": [],
+    "created_by": "staff@example.com",
+    "updated_by": "qc@example.com",
+    "approved_by": "addmin@example.com",
+    "page_title": "Top Car Rental Services",
+    "page_content": "Make a car rental booking in cityName today, with trusted car rental service providers for local and outstations with driver or self drive option at affordable rates, and easy document formalities. Also our vendor caters a wide range of travel-related services including minibus for hire, tempo for hire, taxi services in different segments from economy to luxury cars and more. (Website) connect you with the service provider around you that offer Car Rental services in cityName.",
+    "status": "Active",
+    "createdAt": "2023-08-14T17:54:22.951+00:00",
+    "updatedAt": "2023-08-14T17:54:22.951+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "65117597a04be0fdca379711"
+    },
+    "business_name": "AAA",
+    "business_slug": "aaa",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Self Drive Car Rental",
+      "Luxury Car Rental"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "",
+        "end": ""
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "fsgd",
+    "business_locality": "",
+    "business_city": "Gurugram",
+    "business_state": "g",
+    "business_pin": null,
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": null,
+    "business_ownership": "",
+    "business_email": "",
+    "business_website": "",
+    "business_social": {
+      "facebook": "https://facebook.com/",
+      "instagram": "https://instagram.com/",
+      "youtube": "https://youtube.com/"
+    },
+    "business_description": "",
+    "business_faqs": [
+      {
+        "q": "rteerter",
+        "a": "1111"
+      },
+      {
+        "q": "qrtyterter",
+        "a": "qryttretter"
+      },
+      {
+        "q": "qyrttert",
+        "a": "qrtytre"
+      }
+    ],
+    "business_images": [
+      "d0d9f5ef-3af8-4e9b-8071-66500af7db4a.png",
+      "60aecdda-d040-4fcc-b109-f72a1a943874.png"
+    ],
+    "status": "Active",
+    "createdAt": {
+      "$date": "2023-09-25T11:57:11.337Z"
+    },
+    "updatedAt": {
+      "$date": "2023-09-26T00:52:18.641Z"
+    },
+    "__v": 0,
+    "page_content": "yrt"
+  },
+  {
+    "_id": {
+      "$oid": "65119ea46bb1d10aa6377a8f"
+    },
+    "business_name": "gf",
+    "business_slug": "gf",
+    "business_category": "Car Rental",
+    "business_services": [
+      "Car Rental For Outstation",
+      "Commercial Vehicle Rental Services"
+    ],
+    "business_timing": {
+      "monday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "tuesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "wednesday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "thrusday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "friday": {
+        "start": "09:00",
+        "end": "17:00"
+      },
+      "saturday": {
+        "start": "",
+        "end": ""
+      },
+      "sunday": {
+        "start": "",
+        "end": ""
+      }
+    },
+    "business_address": "g",
+    "business_locality": "",
+    "business_city": "Gurugram",
+    "business_state": "",
+    "business_pin": null,
+    "business_latitude": "",
+    "business_longitude": "",
+    "business_phone": null,
+    "business_ownership": "",
+    "business_email": "",
+    "business_website": "",
+    "business_social": {
+      "facebook": "https://facebook.com/",
+      "instagram": "https://instagram.com/",
+      "youtube": "https://youtube.com/"
+    },
+    "business_description": "",
+    "business_faqs": [
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      },
+      {
+        "q": "",
+        "a": ""
+      }
+    ],
+    "business_images": [],
+    "status": "Active",
+    "createdAt": {
+      "$date": "2023-09-25T14:52:20.932Z"
+    },
+    "updatedAt": {
+      "$date": "2023-09-26T00:47:44.539Z"
+    },
+    "__v": 0
+  }
+]

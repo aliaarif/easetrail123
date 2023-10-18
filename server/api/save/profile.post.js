@@ -15,7 +15,5 @@ export default defineEventHandler(async event => {
     res.status = 200
     res.message = 'Profile Saved successfully'
     return res
-  } catch (error) {
-    // console.log(error)
-  }
+  } catch (error) {}
 })

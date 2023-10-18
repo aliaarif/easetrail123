@@ -18,17 +18,12 @@ export default defineEventHandler(async (event) => {
             statusMessage: 'No token or invalid token provided'
         })
     }
-
-    // const user = verify(token).catch(console.error)
-
     const ticket = await client.verifyIdToken({
         idToken: token,
         audience: googleClientId,  // Specify the CLIENT_ID of the app that accesses the backend
         // Or, if multiple clients access the backend:
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
-
-
     let checkExistingUser = await UserModel.findOne({ email: ticket.payload.email }, {})
     if (checkExistingUser) {
         return checkExistingUser
@@ -58,9 +53,6 @@ async function verify(token) {
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload()
-    payload.role = 'Admin'
+    payload.role = 'User'
     return payload
-    // const userid = payload['sub'];
-    // If request specified a G Suite domain:
-    // const domain = payload['hd'];
 }

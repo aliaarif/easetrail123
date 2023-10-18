@@ -1,20 +1,15 @@
+<script setup>
+const loading = () => {
+    return $nuxt.loading.isActive;
+}
+</script>
 <template>
-    <div v-if="loading" class="loader">
-      <!-- Your loading indicator (e.g., spinner, loading animation, etc.) -->
-      Loading...
-    </div>
-  </template>
-  
-  <script setup>
-
-
-      const loading = () => {
-        return $nuxt.loading.isActive;
-      }
-
-  </script>
-  
-  <style scoped>
+  <div v-if="loading" class="loader">
+    <!-- Your loading indicator (e.g., spinner, loading animation, etc.) -->
+    Loading...
+  </div>
+</template>
+<style scoped>
   .loader {
     position: fixed;
     top: 0;
@@ -24,7 +19,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.1);
     color: white;
   }
   </style>

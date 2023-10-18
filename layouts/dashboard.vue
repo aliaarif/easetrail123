@@ -1,17 +1,8 @@
 <script setup>
-// import { useAuthStore } from "@/stores/auth";
-// import { useAuthDataStore } from "@/stores/auth-data";
-// const authStore = useAuthStore();
-// const authDataStore = useAuthDataStore();
-
-// const router = useRouter();
-// const firstParam = router.currentRoute.value.params.city;
-
-
 </script>
 <template>
   <section class="mx-1">
-    <DefaultNav/>
+    <DefaultNav :firstParam="useRouter()"/>
     <div class="container-inner">
       <slot />
     </div>

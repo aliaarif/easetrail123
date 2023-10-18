@@ -1,41 +1,221 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth";
 import { useAuthDataStore } from "@/stores/auth-data";
-
-// import fetch from 'node-fetch';
-// import { writeFile } from 'fs/promises'; 
-
+import { useDropdownStore } from "@/stores/dropdown";
+import { useItemStore } from "@/stores/item";
+const dropdownStore = useDropdownStore();
+const itemStore = useItemStore();
 const authStore = useAuthStore();
 const authDataStore = useAuthDataStore();
-
-const { slug, title, auth, setAuth, module, edit, fields, item, subcategories, profileTab, setProfileTab } = useCommon()
-const adminModules = ref(['businesses', 'categories', 'subcategories', 'cities', 'states', 'scripts'])
-const qcModules = ref(['QC Done', 'Approoved', 'Pending', 'Rejected'])
-const staffModules = ref(['Total Posted', 'Approoved', 'Pending', 'Rejected'])
-const userModules = ref(['Total Posted', 'Approoved', 'Pending', 'Rejected'])
+const { slug, title, module, cities2, edit, item, subcategories, profileTab, setModule, setAction, setEdit, setItem, setMeta } = useCommon()
+const { onlyAlpha, onlyNumber, onlyAlphaNumber, onlyFacebook, onlyInstagram, onlyYoutube } = useValidation()
+const adminModules = ref(['cities', 'categories', 'subcategories', 'businesses', 'users', 'contacts'])
+const staffModules = ref(['Total Posted', 'Drafted', 'Approoved', 'Rejected/Update'])
+const qcModules = ref(['Drafted','Pending', 'Approoved', 'Rejected'])
+const userModules = ref(['Total Clicks', 'Total Impressions', 'Total Calls'])
 const message = ref('')
 const services = ref('')
+const isSpinner = ref(false)
 const showMessage = ref(false)
-const scats = subcategories.value.map(item => item.name);
+const showMessageForSuccessClass = ref(false)
+const showMessageForErrorClass = ref(true)
+const fileInput = ref(null)
+// const scats = subcategories.value.map(item => item.name);
 const cnt = ref(1)
+const showFilesNo = ref('')
+const selectedFiles = ref([])
+const universalErrors = ref(true)
+const { data: states } = await useAsyncData('states',
+    () => {
+        return $fetch(`/api/states`, {
+            method: 'get'
+        })
+    },
+)
+const { data: cities } = await useAsyncData('cities',
+    () => {
+        return $fetch(`/api/cities?state=${dropdownStore.dropdown.state}`, {
+            method: 'get'
+        })
+    },
+)
+const localities = ref([])
+const localities2 = ref([])
+const localities3 = ref([])
+
+// const { data: localities } = await useAsyncData('localities',
+//     () => {
+//         return $fetch(`/api/localities?state=${dropdownStore.dropdown.state}&slug=${dropdownStore.dropdown.city}`, {
+//             method: 'get'
+//         })
+//     },
+// )
+
+// const { data: localities2 } = await useAsyncData('localities2',
+//     () => {
+//         return $fetch(`/api/localities?state=${dropdownStore.dropdown.state}&slug=${dropdownStore.dropdown.city}`, {
+//             method: 'get'
+//         })
+//     },
+// )
+
+const changeCategorySlug = (cat_slug) => {
+    useFetch(`/api/save/cahngeSubcategoryField?cat_slug=${cat_slug}`, {
+        method: 'get'
+    }).then((res) => {})
+}
+
+const getCities = (event) => {
+    useFetch(`/api/cities?state=${event.target.value}`, {
+        method: 'get'
+    }).then((res) => {
+        cities.value = res.data.value
+        cities2.value = res.data.value
+    })
+}
 
 
+
+const getLocalities = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.business_categoryslug = slug
+    useFetch(`/api/localities?state=${item.value.business_state}&slug=${slug}`, {
+        method: 'get'
+    }).then((res) => {
+        localities.value = res.data.value
+    })
+
+}
+
+const getLocalities2 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let state = selectedOption.getAttribute('data-state');
+    let city = selectedOption.getAttribute('data-city');
+    
+    useFetch(`/api/localities?state=${state}&city=${city}`, {
+        method: 'get'
+    }).then((res) => {
+        localities2.value = res.data.value
+    })
+}
+
+const getLocalities3 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let state = selectedOption.getAttribute('data-state');
+    let city = selectedOption.getAttribute('data-city');
+    
+    useFetch(`/api/localities?state=${state}&city=${city}`, {
+        method: 'get'
+    }).then((res) => {
+        localities3.value = res.data.value
+    })
+}
+
+const { data: categories } = await useAsyncData('categories',
+    () => {
+        return $fetch(`/api/categories`, {
+            method: 'get'
+        })
+    },
+)
 
 const setModuleAndAction = (mod, act, edit) => {
     setModule(mod)
     setAction(act)
     setEdit(edit)
+    if (mod == 'profile') {
+        setItem(authDataStore.authData);
+    }
 }
 
-
-const callShowMessage = (res) => {
-    console.log(res.data.value.message)
+const successMessage = (res) => {
+    console.log(res)
+    if (res.data.value.message == 'Already Exist') {
+        universalErrors.value = true
+    } else {
+        universalErrors.value = false
+        showMessageForSuccessClass.value = true
+        showMessageForErrorClass.value = false
+    }
     message.value = res.data.value.message
     showMessage.value = true
     setTimeout(() => {
         showMessage.value = false
-    }, 2000);
+    }, 3000);
 }
+const errorMessage = (msg) => {
+    message.value = msg
+    showMessage.value = true
+    showMessageForSuccessClass.value = false
+    showMessageForErrorClass.value = true
+}
+const changeSlugAdd = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+
+    subCategoryFormData.value.category_slug = slug
+}
+const changeSlugSave = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.category_slug = slug
+}
+const changeSlugAdd2 = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    serviceFormData.value.subcategory_slug = slug
+}
+const changeSlugSave2 = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.subcategory_slug = slug
+}
+const changeSlugAdd3 = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    keywordFormData.value.subcategory_slug = slug
+}
+const changeSlugSave3 = (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.subcategory_slug = slug
+}
+const changeSlugAdd4 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    businessFormData.value.business_categoryslug = slug
+}
+const changeSlugSave4 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.business_categoryslug = slug
+}
+
+const changeSlugAdd5 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    businessFormData.value.business_localityslug = slug
+}
+const changeSlugSave5 = async (event) => {
+    const selectElement = event.target;
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    let slug = selectedOption.getAttribute('data-slug');
+    item.value.business_localityslug = slug
+}
+
 
 const changeServicesAdd = (event) => {
     businessFormData.value.business_services = []
@@ -45,7 +225,6 @@ const changeServicesAdd = (event) => {
         services.value = res
     })
 }
-
 if (edit) {
     useFetch(`/api/services?name=${item?.value?.business_category}`, {
         method: 'get'
@@ -53,7 +232,6 @@ if (edit) {
         services.value = res
     })
 }
-
 const changeServicesSave = (event) => {
     item.value.business_services = []
     $fetch(`/api/services?name=${event.target.value}`, {
@@ -62,103 +240,488 @@ const changeServicesSave = (event) => {
         services.value = res
     })
 }
-
-const changeOwnershipAdd = (event) => {
-    businessFormData.value.business_ownership = event.target.value
-}
-
-const changeOwnershipSave = (event) => {
-    item.value.business_ownership = event.target.value
-}
-
+const changeOwnershipAdd = (event) => { businessFormData.value.business_ownership = event.target.value }
+const changeOwnershipSave = (event) => { item.value.business_ownership = event.target.value }
 const addBusinessServices1 = (service) => {
-    if (!businessFormData.value.business_services.includes(service)) {
-        businessFormData.value.business_services.push(service)
-    }
+    if (!businessFormData.value.business_services.includes(service)) { businessFormData.value.business_services.push(service) }
 }
-
 const addBusinessServices2 = (service) => {
-    if (!item.value.business_services.includes(service)) {
-        item.value.business_services.push(service)
-    }
+    if (!item.value.business_services.includes(service)) { item.value.business_services.push(service) }
 }
-
-const removeBusinessServices1 = (service) => {
-    businessFormData.value.business_services.pop(service)
-}
-
-const removeBusinessServices2 = (service) => {
-    item.value.business_services.pop(service)
-}
-
+const removeBusinessServices1 = (service) => { businessFormData.value.business_services.pop(service) }
+const removeBusinessServices2 = (service) => { item.value.business_services.pop(service) }
 const removeImageFromBusinessAdd = (image) => {
-    businessFormData.value.business_images.pop(image)
-    showFilesNo.value = (businessFormData.value.business_images.length > 0) ? businessFormData.value.business_images.length + ' Files Selected' : ''
+    businessFormData.value.images.pop(image)
+    showFilesNo.value = (businessFormData.value.images.length > 0) ? businessFormData.value.images.length + ' Files Selected' : ''
 }
-
 const removeImageFromBusinessSave = (image) => {
-    item.value.business_images.pop(image)
-    showFilesNo.value = (item.value.business_images.length > 0) ? item.value.business_images.length + ' Files Selected' : ''
+    item.value.images.pop(image)
+    showFilesNo.value = (item.value.images.length > 0) ? item.value.images.length + ' Files Selected' : ''
 }
-
-const makeSlugForSlugOnlyAdd = (event) => {
-    businessFormData.value.business_slug = event.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-').trim()
-}
-
-const makeSlugForSlugOnlySave = (event) => {
-    item.value.business_slug = event.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-').trim()
-}
-
 // States Modules
 const stateFormData = ref({
     name: '',
     status: 'Active'
 })
-
+const stateErrors = ref({ name: false })
+const stateErrorsCheck = () => {
+    if (!stateErrors.value.name) { universalErrors.value = false } else { universalErrors.value = true }
+}
 const addState = async () => {
-    useFetch("/api/save/state", {
-        method: 'post',
-        body: stateFormData
-    }).then((res) => {
-        callShowMessage(res)
+    isSpinner.value = true
+    stateErrors.value.name = !stateFormData.value.name  ? true : false
+    stateErrorsCheck()
+    useFetch("/api/save/state", { method: 'post', body: stateFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) { stateFormData.value.name = '' } else { universalErrors.value  = true }
     })
 }
-
+const sErrors = ref({ name: false })
+const sErrorsCheck = () => {
+    if (!sErrors.value.name) { universalErrors.value = false } else { universalErrors.value = true }
+}
 const editState = async () => {
-    useFetch("/api/save/state", {
-        method: 'post',
-        body: item.value
-    }).then((res) => {
-        callShowMessage(res)
+    isSpinner.value = true
+    sErrors.value.name = !item.value.name  ? true : false
+    sErrorsCheck()
+    useFetch("/api/save/state", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
     })
 }
-
-// SubCategories Modules
-const subCategoryFormData = ref({
+// Cities Modules
+const cityFormData = ref({
+    state:'',
     name: '',
     slug: '',
-    category: '',
-    services:[],
+    status: 'Active'
+})
+const cityErrors = ref({
+    state: false,
+    name: false,
+    slug: false
+})
+const cityErrorsCheck = () => {
+    if (!cityErrors.value.state && !cityErrors.value.name && !cityErrors.value.slug ) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addCity = async () => {
+    isSpinner.value = true
+    cityFormData.value.name = dropdownStore.dropdown.city
+    cityErrors.value.state = !cityFormData.value.state  ? true : false,
+    cityErrors.value.name = !cityFormData.value.name  ? true : false,
+    cityErrors.value.slug = !cityFormData.value.slug  ? true : false
+    cityErrorsCheck()
+    useFetch("/api/save/city", { method: 'post', body: cityFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            cityFormData.value.state = ''
+            cityFormData.value.name = ''
+            cityFormData.value.slug = ''
+            dropdownStore.dropdown.city  = ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const cErrors = ref({
+    state: false,
+    name: false,
+    slug: false
+})
+const cErrorsCheck = () => {
+    if (!cErrors.value.state && !cErrors.value.name && !cErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editCity = async () => {
+    isSpinner.value = true
+    item.value.name = dropdownStore.dropdown.city
+    cErrors.value.state = !item.value.state  ? true : false
+    cErrors.value.name = !item.value.name  ? true : false
+    cErrors.value.slug = !item.value.slug  ? true : false
+    cErrorsCheck()
+    useFetch("/api/save/city", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
+    })
+}
+// Localities Modules
+const localityFormData = ref({
+    state:'',
+    city:'',
+    name: '',
+    slug: '',
+    status: 'Active'
+})
+const localityErrors = ref({
+    state: false,
+    city: false,
+    name: false,
+    slug: false
+})
+const localityErrorsCheck = () => {
+    if (!localityErrors.value.state && !localityErrors.value.city && !localityErrors.value.name && !localityErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addLocality = async () => {
+    isSpinner.value = true
+    localityFormData.value.name = dropdownStore.dropdown.locality
+    localityErrors.value.state = !localityFormData.value.state  ? true : false
+    localityErrors.value.city = !localityFormData.value.city  ? true : false
+    localityErrors.value.name = !localityFormData.value.name  ? true : false
+    localityErrors.value.slug = !localityFormData.value.slug  ? true : false
+    localityErrorsCheck()
+    useFetch("/api/save/locality", { method: 'post', body: localityFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            localityFormData.value.state = ''
+            localityFormData.value.city = ''
+            localityFormData.value.name = ''
+            localityFormData.value.slug = ''
+            dropdownStore.dropdown.locality =  ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const lErrors = ref({
+    state: false,
+    city: false,
+    name: false,
+    slug: false
+})
+const lErrorsCheck = () => {
+    if (!lErrors.value.state && !lErrors.value.city && !lErrors.value.name && !lErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editLocality = async () => {
+    isSpinner.value = true
+    item.value.name = dropdownStore.dropdown.locality
+    lErrors.value.state = !item.value.state  ? true : false
+    lErrors.value.city = !item.value.city  ? true : false
+    lErrors.value.name = !item.value.name  ? true : false
+    lErrors.value.slug = !item.value.slug  ? true : false
+    lErrorsCheck()
+    useFetch("/api/save/locality", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        item.value.business_locality =  ''
+        if (!universalErrors.value) { itemStore.setItem(item) } else { universalErrors.value = true }
+        // universalErrors.value = universalErrors.value ? true : false
+    })
+}
+// Categories Modules
+const categoryFormData = ref({
+    name: '',
+    slug: '',
+    image: 'https://www.svgrepo.com/show/505187/public-security-bureau.svg',
     page_title: '',
     page_content: '',
     status: 'Active'
 })
-
-const addSubCategory = async () => {
-    useFetch("/api/save/subcategory", {
-        method: 'post',
-        body: subCategoryFormData
-    }).then((res) => {
-        callShowMessage(res)
+const categoryErrors = ref({
+    name: false,
+    slug: false,
+    page_title: false,
+    page_content: false
+})
+const categoryErrorsCheck = () => {
+    if (!categoryErrors.value.name && !categoryErrors.value.slug && !categoryErrors.value.page_title && !categoryErrors.value.page_content) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addCategory = async () => {
+    isSpinner.value = true
+    categoryErrors.value.name = !categoryFormData.value.name  ? true : false
+    categoryErrors.value.slug = !categoryFormData.value.slug  ? true : false
+    categoryErrors.value.page_title = !categoryFormData.value.page_title  ? true : false
+    categoryErrors.value.page_content = !categoryFormData.value.page_content  ? true : false
+    categoryErrorsCheck()
+    useFetch("/api/save/category", { method: 'post', body: categoryFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            categoryFormData.value.name = ''
+            categoryFormData.value.slug = ''
+            categoryFormData.value.page_title = ''
+            categoryFormData.value.page_content = ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const catErrors = ref({
+    name: false,
+    slug: false,
+    page_title: false,
+    page_content: false
+})
+const catErrorsCheck = () => {
+    if (!catErrors.value.name && !catErrors.value.slug && !catErrors.value.page_title && !catErrors.value.page_content) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editCategory = async () => {
+    isSpinner.value = true
+    catErrors.value.name = !item.value.name  ? true : false
+    catErrors.value.slug = !item.value.slug  ? true : false
+    catErrors.value.page_title = !item.value.page_title  ? true : false
+    catErrors.value.page_content = !item.value.page_content  ? true : false
+    catErrorsCheck()
+    useFetch("/api/save/category", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
+    })
+}
+// Subcategories Modules
+const subCategoryFormData = ref({
+    category: '',
+    category_slug: '',
+    name: '',
+    slug: '',
+    page_title: '',
+    page_content: '',
+    status: 'Active'
+})
+const subCategoryErrors = ref({
+    category: false,
+    category_slug: false,
+    name: false,
+    slug: false,
+    page_title: false,
+    page_content: false
+})
+const subcategoryErrorsCheck = () => {
+    if (!subCategoryErrors.value.category &&  !subCategoryErrors.value.name && !subCategoryErrors.value.slug  && !subCategoryErrors.value.page_title && !subCategoryErrors.value.page_content) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addSubcategory = async () => {
+    isSpinner.value = true
+    subCategoryErrors.value.category = !subCategoryFormData.value.category  ? true : false
+    subCategoryErrors.value.name = !subCategoryFormData.value.name  ? true : false
+    subCategoryErrors.value.slug = !subCategoryFormData.value.slug  ? true : false
+    subCategoryErrors.value.page_title = !subCategoryFormData.value.page_title  ? true : false
+    subCategoryErrors.value.page_content = !subCategoryFormData.value.page_content  ? true : false
+    subcategoryErrorsCheck()
+    useFetch("/api/save/subcategory", { method: 'post', body: subCategoryFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            subCategoryFormData.value.category = ''
+            subCategoryFormData.value.name = ''
+            subCategoryFormData.value.slug = ''
+            subCategoryFormData.value.page_title = ''
+            subCategoryFormData.value.page_content = ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const subCatErrors = ref({
+    category: false,
+    name: false,
+    slug: false,
+    page_title: false,
+    page_content: false
+})
+const subCatErrorsCheck = () => {
+    if (!subCatErrors.value.category  && !subCatErrors.value.name && !subCatErrors.value.slug && !subCatErrors.value.page_title && !subCatErrors.value.page_content) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editSubcategory = async () => {
+    isSpinner.value = true
+    subCatErrors.value.category = !item.value.category  ? true : false
+    subCatErrors.value.name = !item.value.name  ? true : false
+    subCatErrors.value.slug = !item.value.slug  ? true : false
+    subCatErrors.value.page_title = !item.value.page_title  ? true : false
+    subCatErrors.value.page_content = !item.value.page_content  ? true : false
+    subCatErrorsCheck()
+    useFetch("/api/save/subcategory", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
     })
 }
 
-const editSubCategory = async () => {
-    useFetch("/api/save/subcategory", {
-        method: 'post',
-        body: item
-    }).then((res) => {
-        callShowMessage(res)
+// Services Modules
+const serviceFormData = ref({
+    subcategory: '',
+    subcategory_slug: '',
+    name: '',
+    slug: '',
+    // page_title: '',
+    // page_content: '',
+    status: 'Active'
+})
+const serviceErrors = ref({
+    subcategory: false,
+    subcategory_slug: false,
+    name: false,
+    slug: false,
+    // page_title: false,
+    // page_content: false
+})
+const serviceErrorsCheck = () => {
+    if (!serviceErrors.value.subcategory &&  !serviceErrors.value.name && !serviceErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addService = async () => {
+    isSpinner.value = true
+    serviceErrors.value.subcategory = !serviceFormData.value.subcategory  ? true : false
+    serviceErrors.value.name = !serviceFormData.value.name  ? true : false
+    serviceErrors.value.slug = !serviceFormData.value.slug  ? true : false
+    // serviceErrors.value.page_title = !serviceFormData.value.page_title  ? true : false
+    // serviceErrors.value.page_content = !serviceFormData.value.page_content  ? true : false
+    serviceErrorsCheck()
+    useFetch("/api/save/service", { method: 'post', body: serviceFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            serviceFormData.value.subcategory = ''
+            serviceFormData.value.name = ''
+            serviceFormData.value.slug = ''
+            // serviceFormData.value.page_title = ''
+            // serviceFormData.value.page_content = ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const eServiceErrors = ref({
+    subcategory: false,
+    subcategory_slug: false,
+    name: false,
+    slug: false,
+    // page_title: false,
+    // page_content: false
+})
+const eServiceErrorsCheck = () => {
+    if (!eServiceErrors.value.subcategory  && !eServiceErrors.value.name && !eServiceErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editService = async () => {
+    isSpinner.value = true
+    eServiceErrors.value.subcategory = !item.value.subcategory  ? true : false
+    eServiceErrors.value.name = !item.value.name  ? true : false
+    eServiceErrors.value.slug = !item.value.slug  ? true : false
+    // eServiceErrors.value.page_title = !item.value.page_title  ? true : false
+    // eServiceErrors.value.page_content = !item.value.page_content  ? true : false
+    eServiceErrorsCheck()
+    useFetch("/api/save/service", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
+    })
+}
+
+// Keyword Modules
+const keywordFormData = ref({
+    subcategory: '',
+    subcategory_slug: '',
+    name: '',
+    slug: '',
+    // page_title: '',
+    // page_content: '',
+    status: 'Active'
+})
+const keywordErrors = ref({
+    subcategory: false,
+    subcategory_slug: false,
+    name: false,
+    slug: false,
+    // page_title: false,
+    // page_content: false
+})
+const keywordErrorsCheck = () => {
+    if (!keywordErrors.value.subcategory &&  !keywordErrors.value.name && !keywordErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const addKeyword = async () => {
+    isSpinner.value = true
+    keywordErrors.value.subcategory = !keywordFormData.value.subcategory  ? true : false
+    keywordErrors.value.name = !keywordFormData.value.name  ? true : false
+    keywordErrors.value.slug = !keywordFormData.value.slug  ? true : false
+    // keywordErrors.value.page_title = !keywordFormData.value.page_title  ? true : false
+    // keywordErrors.value.page_content = !keywordFormData.value.page_content  ? true : false
+    keywordErrorsCheck()
+    useFetch("/api/save/keyword", { method: 'post', body: keywordFormData, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            keywordFormData.value.subcategory = ''
+            keywordFormData.value.name = ''
+            keywordFormData.value.slug = ''
+            // keywordFormData.value.page_title = ''
+            // keywordFormData.value.page_content = ''
+        } else {
+            universalErrors.value  = true
+        }
+    })
+}
+const kErrors = ref({
+    subcategory: false,
+    subcategory_slug: false,
+    name: false,
+    slug: false,
+    // page_title: false,
+    // page_content: false
+})
+const kErrorsCheck = () => {
+    if (!kErrors.value.subcategory  && !kErrors.value.name && !kErrors.value.slug) {
+        universalErrors.value = false
+    } else {
+        universalErrors.value = true
+    }
+}
+const editKeyword = async () => {
+    isSpinner.value = true
+    kErrors.value.subcategory = !item.value.subcategory  ? true : false
+    kErrors.value.name = !item.value.name  ? true : false
+    kErrors.value.slug = !item.value.slug  ? true : false
+    // kErrors.value.page_title = !item.value.page_title  ? true : false
+    // kErrors.value.page_content = !item.value.page_content  ? true : false
+    kErrorsCheck()
+    useFetch("/api/save/keyword", { method: 'post', body: item.value, watch:false}).then((res) => {
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        universalErrors.value = universalErrors.value ? true : false
     })
 }
 
@@ -166,9 +729,24 @@ const editSubCategory = async () => {
 const businessFormData = ref({
     business_name: '',
     business_slug: '',
-    business_ownership: '',
     business_category: '',
-    business_services: [],
+    business_categoryslug: '',
+    business_phone: '',
+    business_email: '',
+    business_website: '',
+    business_address: '',
+    business_state: '',
+    business_city: '',
+    business_locality: '',
+    business_localityslug: '',
+    business_pin: '',
+    business_latitude: '',
+    business_longitude: '',
+    business_social: {
+        facebook: 'https://facebook.com/',
+        instagram: 'https://instagram.com/',
+        youtube: 'https://youtube.com/'
+    },
     business_timing:
     {
         monday: {
@@ -206,21 +784,8 @@ const businessFormData = ref({
             end: ""
         }
     },
-    business_address: '',
-    business_locality: '',
-    business_city: '',
-    business_state: '',
-    business_pin: '',
-    business_phone: '',
-    business_email: '',
-    business_website: '',
-    business_social: {
-        facebook: 'https://facebook.com/',
-        instagram: 'https://instagram.com/',
-        youtube: 'https://youtube.com/'
-    },
-    business_latitude: '',
-    business_longitude: '',
+    business_services: [],
+    business_keywords: [],
     business_description: '',
     business_faqs: [
         {
@@ -236,70 +801,128 @@ const businessFormData = ref({
             a: ""
         }
     ],
+    images: [],
     business_images: [],
+    page_title: '',
+    page_content: '',
+    business_ownership: '',
     status: 'Pending',
-    created_by: authDataStore.authData.value?.email,
-    updated_by: authDataStore.authData.value?.email
+    created_by: authDataStore.authData.email,
+    updated_by: authDataStore.authData.email
 })
-
 const businessErrors = ref({
     business_name: false,
     business_slug: false,
     business_category: false,
-    business_address: false,
+    business_state: false,
     business_city: false,
-    business_state: false
 })
-
-const addBusiness =  () => {
+const businessErrorsCheck = () => {
+    if (!businessErrors.value.business_name && !businessErrors.value.business_slug && !businessErrors.value.business_category  && !businessErrors.value.business_state  && !businessErrors.value.city) { universalErrors.value = false } else { universalErrors.value = true }
+}
+const addBusiness = () => {
+    isSpinner.value = true
     businessErrors.value.business_name = !businessFormData.value.business_name ?  true : false
     businessErrors.value.business_slug = !businessFormData.value.business_slug ? true : false
     businessErrors.value.business_category = !businessFormData.value.business_category ? true : false
-    businessErrors.value.business_address = !businessFormData.value.business_address ? true : false
     businessErrors.value.business_city = !businessFormData.value.business_city ? true : false
     businessErrors.value.business_state = !businessFormData.value.business_state ? true : false
-
+    businessErrorsCheck()
     useFetch("/api/save/business", {
         method: 'post',
         headers: {'Content-Type': 'multipart/form-data'},
         body: businessFormData,
         watch:false
     }).then((res) => {
-        callShowMessage(res)  
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields')
+        if (!universalErrors.value) {
+            showFilesNo.value = ''
+            businessFormData.value.business_name = ''
+            businessFormData.value.business_slug = ''
+            businessFormData.value.business_category = ''
+            businessFormData.value.business_phone = ''
+            businessFormData.value.business_email = ''
+            businessFormData.value.business_website = ''
+            businessFormData.value.business_ownership = ''
+            businessFormData.value.business_address = ''
+            businessFormData.value.business_state = ''
+            businessFormData.value.business_city = ''
+            businessFormData.value.business_locality = ''
+            businessFormData.value.business_pin = ''
+            businessFormData.value.business_latitude = ''
+            businessFormData.value.business_longitude = ''
+            businessFormData.value.business_social.facebook = ''
+            businessFormData.value.business_social.instagram = ''
+            businessFormData.value.business_social.youtube = ''
+            businessFormData.value.business_timing.monday.start = ''
+            businessFormData.value.business_timing.monday.end = ''
+            businessFormData.value.business_timing.tuesday.start = ''
+            businessFormData.value.business_timing.tuesday.end = ''
+            businessFormData.value.business_timing.wednesday.start = ''
+            businessFormData.value.business_timing.wednesday.end = ''
+            businessFormData.value.business_timing.thrusday.start = ''
+            businessFormData.value.business_timing.thrusday.end = ''
+            businessFormData.value.business_timing.friday.start = ''
+            businessFormData.value.business_timing.friday.end = ''
+            businessFormData.value.business_timing.saturday.start = ''
+            businessFormData.value.business_timing.saturday.end = ''
+            businessFormData.value.business_timing.sunday.start = ''
+            businessFormData.value.business_timing.sunday.end = ''
+            businessFormData.value.business_description = ''
+            businessFormData.value.business_faqs = [
+                {
+                    q: "",
+                    a: ""
+                },
+                {
+                    q: "",
+                    a: ""
+                },
+                {
+                    q: "",
+                    a: ""
+                }
+            ]
+            businessFormData.value.business_images = []
+            businessFormData.value.images = []
+        } else {
+            universalErrors.value  = true
+        }
     })
-    selectedFiles.value = []
+    // selectedFiles.value = []
 }
-
-
 // For Business Edit
 const bErrors = ref({
     business_name: false,
     business_slug: false,
     business_category: false,
-    business_address: false,
     business_city: false,
     business_state: false
 })
-
+const bErrorsCheck = () => {
+    if (!bErrors.value.business_name && !bErrors.value.business_slug && !bErrors.value.business_category  && !bErrors.value.business_state  && !bErrors.value.city) { universalErrors.value = false } else { universalErrors.value = true }
+}
 const editBusiness =  () => {
+    isSpinner.value = true
     bErrors.value.business_name = !item.value.business_name ?  true : false
     bErrors.value.business_slug = !item.value.business_slug ? true : false
     bErrors.value.business_category = !item.value.business_category ? true : false
-    bErrors.value.business_address = !item.value.business_address ? true : false
     bErrors.value.business_city = !item.value.business_city ? true : false
     bErrors.value.business_state = !item.value.business_state ? true : false
-
+    bErrorsCheck()
+    item.value.updated_by = authDataStore.authData.value?.email
     useFetch("/api/save/business", {
         method: 'post',
         headers: {'Content-Type': 'multipart/form-data'},
         body: item.value,
         watch:false
     }).then((res) => {
-        callShowMessage(res)  
+        isSpinner.value = false
+        !universalErrors.value ? successMessage(res) : errorMessage('Please fill the required fields') 
+        universalErrors.value = universalErrors.value ? true : false  
     })
 }
-
-
 // Users Modules
 const userFormData = ref({
     name: '',
@@ -312,31 +935,19 @@ const userFormData = ref({
     state: '',
     pin: ''
 })
-
 const addUser = async () => {
     useFetch("/api/save/user", {
         method: 'post',
         body: userFormData
-    }).then((res) => {
-        callShowMessage(res)
-    })
+    }).then((res) => { successMessage(res)})
 }
-
 const editUser = async () => {
     useFetch("/api/save/user", {
         method: 'post',
         body: item.value
     }).then((res) => {
-        callShowMessage(res)
+        successMessage(res)
     })
-}
-
-const syncEditorValue1 = (event) => {
-    item.value.business_description = event.srcElement.innerText
-}
-
-const syncEditorValue2 = (event) => {
-    item.value.page_content = event.srcElement.innerText
 }
 
 
@@ -346,173 +957,141 @@ const editProfile = async () => {
         body: item.value
     }).then((res) => {
         // console.log(res)
-        callShowMessage(res)
+        successMessage(res)
         authDataStore.setAuthData(item.value)
 
         // setAuth(item.value)
         // localStorage.auth = JSON.stringify(item.value) 
     })
 }
-
-// Leads Modules
-// const leadFormData = ref({
-//     name: '',
-//     status: 'Active'
-// })
-
-// const addLead = async () => {
-//     useFetch("/api/save/lead", {
-//         method: 'post',
-//         body: leadFormData
-//     }).then((res) => {
-//         callShowMessage(res)
-//     })
-// }
-
-// const editLead = async () => {
-//     useFetch("/api/save/lead", {
-//         method: 'post',
-//         body: item
-//     }).then((res) => {
-//         callShowMessage(res)
-//     })
-// }
-
 // Contacts Modules
 const contactFormData = ref({
     name: '',
     status: 'Active'
 })
-
 const addContact = async () => {
     useFetch("/api/save/contact", {
         method: 'post',
         body: userFormData
     }).then((res) => {
-        callShowMessage(res)
+        successMessage(res)
     })
 }
-
 const editContact = async () => {
     useFetch("/api/save/contact", {
         method: 'post',
         body: item
     }).then((res) => {
-        callShowMessage(res)
+        successMessage(res)
     })
 }
-
-
-
 // Scripts Modules
 const scriptFormData = ref({
     name: '',
+    type: '',
+    body: '',
     status: 'Active'
 })
-
 const addScript = async () => {
     useFetch("/api/save/script", {
         method: 'post',
-        body: userFormData
+        body: scriptFormData
     }).then((res) => {
-        callShowMessage(res)
+        successMessage(res)
     })
 }
-
 const editScript = async () => {
     useFetch("/api/save/script", {
         method: 'post',
         body: item
     }).then((res) => {
-        callShowMessage(res)
+        successMessage(res)
     })
 }
+const makeSlug = (mod, edit = false) => {
+    if (mod == 'cities') {
+        cityFormData.value.slug  = dropdownStore.dropdown.city
+        if (edit) {  item.value.slug = slug(dropdownStore.dropdown.city)  } else { cityFormData.value.slug = slug(dropdownStore.dropdown.city) }
+    }
+    if (mod == 'localities') {
+        localityFormData.value.slug  = dropdownStore.dropdown.locality
+        if (edit) {  item.value.slug = slug(dropdownStore.dropdown.locality)  } else { localityFormData.value.slug = slug(dropdownStore.dropdown.locality) }
+    }
+    if (mod == 'categories') {
+        if (edit) {  item.value.slug = slug(item.value.name)  } else { categoryFormData.value.slug = slug(categoryFormData.value.name) }
+    }
+    if (mod == 'subcategories') {
+        if (edit) {  item.value.slug = slug(item.value.name)  } else { subCategoryFormData.value.slug = slug(subCategoryFormData.value.name) }
+    }
+    if (mod == 'services') {
+        if (edit) {  item.value.slug = slug(item.value.name)  } else { serviceFormData.value.slug = slug(serviceFormData.value.name) }
+    }
+    if (mod == 'keywords') {
+        if (edit) {  item.value.slug = slug(item.value.name)  } else { keywordFormData.value.slug = slug(keywordFormData.value.name) }
+    }
+    if (mod == 'businesses') {
+        // localityFormData.value.business_locality  = dropdownStore.dropdown.locality
+        if (edit) {  item.value.business_locality = slug(item.value.business_name)  } else { businessFormData.value.business_slug = slug(businessFormData.value.business_name) }
+    }
+}
+const returnVoid = () => { return }
 
-function makeSlugAdd() {
-    businessFormData.value.business_slug = slug(businessFormData.value.business_name);
+const readFileAsBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64String = reader.result.split(',')[1]
+      resolve(base64String)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
-function makeSlugSave() {
-    item.value.business_slug = slug(item.value.business_name);
+const onFileChangeAdd = async (event) => {
+  const files = fileInput.value.files
+  const promises = []
+  for (let i = 0; i < files.length; i++) {
+    promises.push(readFileAsBase64(files[i]))
+    showFilesNo.value = files.length + ' Files Selected'
+    selectedFiles.value.images = files
+  }
+  Promise.all(promises).then(images => {
+    businessFormData.value.images = images
+  })
 }
-
-const showFilesNo = ref('')
-
-const returnVoid = () => {
-    return;
-}
-
-
-
-
-
-// const downloadImage = async (url, path) => {
-//   try {
-//     const response = await fetch(url);
-//     const buffer = await response.buffer();
-//     await writeFile(path, buffer);  // Using async writeFile
-//     console.log('Image downloaded successfully!');
-//   } catch (error) {
-//     console.error('Error downloading image:', error);
-//   }
-// };
-
-
-
-
-const selectedFiles = ref([])
-
-const onFileChangeAdd = (event) => {
-    selectedFiles.value.business_images = Array.from(event.target.files)
-    showFilesNo.value = selectedFiles.value.business_images.length + ' Files Selected'
-    selectedFiles.value.business_images.forEach(file => {
-        const imageUrl = URL.createObjectURL(file)
-
-        // downloadImage(imageUrl, 'public/');
-
-        //const downloadLink = document.createElement('a')
-        // downloadLink.href = imageUrl
-        // downloadLink.download = imageUrl.replace('blob:http://localhost:3000/', '')+'.png'
-        // downloadLink.click()
-        businessFormData.value.business_images.push(imageUrl.replace('blob:http://localhost:3000/', '')+'.png')
-        URL.revokeObjectURL(imageUrl)         
-    });
-}
-
 const onFileChangeSave = (event) => {
-    selectedFiles.value.business_images = Array.from(event.target.files)
-    showFilesNo.value = selectedFiles.value.business_images.length + ' Files Selected'
-    selectedFiles.value.business_images.forEach(file => {
-        const imageUrl = URL.createObjectURL(file)
-
-        // downloadImage(imageUrl, 'public/');
-
-        //const downloadLink = document.createElement('a')
-        // downloadLink.href = imageUrl
-        // downloadLink.download = imageUrl.replace('blob:http://localhost:3000/', '')+'.png'
-        // downloadLink.click()
-        item.value.business_images.push(imageUrl.replace('blob:http://localhost:3000/', '')+'.png')
-        URL.revokeObjectURL(imageUrl)         
-    });
+    const files = fileInput.value.files
+    const promises = []
+    for (let i = 0; i < files.length; i++) {
+        promises.push(readFileAsBase64(files[i]))
+        showFilesNo.value = files.length + ' Files Selected'
+        selectedFiles.value.images = files
+    }
+    Promise.all(promises).then(images => {
+        item.value.images = images
+    })
 }
-
-
+const loadCount = (mod) => {
+    const { data:res } =  useFetch(`/api/count?mod=${mod}&countTerm=${''}`, {
+        method: 'get'
+    })
+    return res.value
+}
 </script>
- 
 <template>
-  
     <!-- module == 'dashboard' -->
     <template v-if="module == 'dashboard'">
         <template v-if="module == 'dashboard' && authDataStore.authData.role === 'Admin'">
             <div class="columns is-multiline is-mobile is-variable is-2-tablet mt-4 mb-6">
-                <div class="column is-6-mobile is-4-tablet is-3-desktop is-3-widescreen" v-for="module in adminModules"
+                <div class="column is-4-mobile is-3-tablet is-2-desktop is-2-widescreen" v-for="module in adminModules"
                     :key="module">
-                    <a @click="" href="javascript:;" class="grid-item box">
+                    <nuxt-link :to="'javascript:;'" class="grid-item box">
                         <img src="https://www.svgrepo.com/show/501814/microphone1-broadcasting.svg"
                             style="width: 100px; height: 100px;" alt="Your Image">
                         <p><b>{{ title(module) }}</b></p>
-                        <p><b>300+ </b></p>
-                    </a>
+                        <!-- <p><b>{{loadCount(module)}} </b></p> -->
+                    </nuxt-link>
                 </div>
             </div>
         </template>
@@ -558,206 +1137,678 @@ const onFileChangeSave = (event) => {
             </div>
         </template>
     </template>
-
+     <!-- All Tables -->
     <template v-else-if="module != 'dashboard' && edit == false">
         <div class="table-container">
             <!-- Admin Tables -->
             <TableForAdmin v-if="authDataStore.authData.role === 'Admin'" />
-
             <!-- Staff and QC Tables -->
             <TableForStaffAndQC v-if="authDataStore.authData.role === 'Staff' || authDataStore.authData.role === 'QC' || authDataStore.authData.role === 'User'" />
         </div>
     </template>
-
    <!-- For Add And Edit Modules -->
     <template v-else>
-  
         <!-- States Module -->
         <template v-if="module == 'states'">
-
             <!-- Add State -->
             <section v-if="module == 'states' && !item">
                 <div class="columns">
                     <div class="column is-half">
+                        <!-- {{stateFormData}} -->
                         <form @submit.prevent="addState">
-
                             <div class="field">
                                 <label class="label is-size-7">State Name</label>
                                 <div class="control">
-                                    <input class="input is-small" type="text" v-model="stateFormData.state"
-                                        placeholder="Enter state">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': stateErrors.name}" 
+                                    v-model="stateFormData.name"  
+                                    placeholder="Enter State Name" 
+                                    @input="onlyAlpha">
                                 </div>
                             </div>
-
-                            <button type="submit" class="button is-primary">Add</button>
-                            
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
                         </form>
                     </div>
                 </div>
             </section>
-
             <!-- Edit State -->
             <section v-if="module == 'states' && item">
-                
                 <div class="columns">
                     <div class="column is-half">
-                        <form @submit.prevent="editState()">
-
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editState">
                             <div class="field">
                                 <label class="label is-size-7">State Name</label>
                                 <div class="control">
-                                    <input class="input is-small" type="text" v-model="item.name" placeholder="Enter state">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': sErrors.name}" 
+                                    v-model="item.name"  
+                                    placeholder="Enter State Name" 
+                                    @input="onlyAlpha">
                                 </div>
                             </div>
-                            <button type="submit" class="button is-primary is-small">Save</button> 
-                            <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
                         </form>
                     </div>
                 </div>
             </section>
-
         </template>
-
-
-        <!-- Subcategories Module -->
-        <template v-if="module == 'subcategories'">
-
-            <!-- Add Subcategory -->
-            <section v-if="module == 'subcategories' && !item">
-                    <div class="columns">
-                        <div class="column is-half">
-                            <form @submit.prevent="addSubCategory">
-
+        <!-- Cities Module -->
+        <template v-if="module == 'cities'">
+            <!-- Add State -->
+            <section v-if="module == 'cities' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                    <!-- {{cityFormData}} -->
+                        <form @submit.prevent="addCity">
                             <div class="field">
-                                <label class="label is-size-7">Category Name</label>
-                                <div class="control">
-                                    <select id="scat" v-model="subCategoryFormData.name" @change="changeServicesAdd">
-                                        <option selected value="">Select a Category</option>
-                                        <option v-for="scat in scats" :key="scat">{{ scat }}</option>
+                                <label class="label is-size-7">State Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="cityFormData.state" :class="{'dirty': cityErrors.state}">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="field" v-if="services">
-                                <label class="label is-size-7">Business Services</label>
-                                <div class="block">
-                                    <span class="tag is-secondary is-medium ml-1" v-for="service in services.services"
-                                        :key="service" @click="addBusinessServices1(service)">
-                                        {{ service }}
-                                    </span>
-                                </div>
-                                <div class="block">
-                                    <span class="tag is-primary is-medium ml-1"
-                                        v-for="service in businessFormData.business_services">
-                                        {{ service }}
-                                        <button class="delete is-medium" @click="removeBusinessServices1(service)"></button>
-                                    </span>
+                            <div class="field">
+                                <label class="label is-size-7">City Name</label>
+                                <div class="field">
+                                    <CityDropdown 
+                                    class="mt-1 navbar-item has-dropdown is-hoverable"
+                                    :class="{'dirty': cityErrors.name}" 
+                                    :stateName="cityFormData.state"
+                                    v-model="cityFormData.name"
+                                    @childEvent="makeSlug('cities')"
+                                    />
                                 </div>
                             </div>
-
-
-                                <div class="field">
-                                    <label class="label is-size-7">Category Name</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="subCategoryFormData.category"
-                                            placeholder="Enter category">
-                                    </div>
+                            <div class="field">
+                                <label class="label is-size-7">City Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': cityErrors.slug}" 
+                                    v-model="cityFormData.slug"  
+                                    placeholder="Enter City Slug" 
+                                    @input="onlyAlphaNumber"
+                                   >
                                 </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Sub Category Name</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="subCategoryFormData.name"
-                                            placeholder="Enter Subcategory">
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Slug</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="subCategoryFormData.slug" placeholder="Enter Slug">
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Page Title</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="subCategoryFormData.page_title"
-                                            placeholder="Enter Page Title">
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Page Content</label>
-                                    <div class="control">
-                                    <client-only>
-                                        <Editor  @input="syncEditorValue2" v-model="subCategoryFormData.page_content" :value="subCategoryFormData.page_content"  /> 
-                                    </client-only>
-                                    </div>
-                                </div>
-                                <button type="submit" class="button is-primary">Add</button>
-                                {{ message }}
-                            </form>
-                        </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
                     </div>
-                </section>
-
-                <!-- Edit Subcategories -->
-                <section v-if="module == 'subcategories' && item">
-                   
-                    <div class="columns">
-                        <div class="column is-half">
-                            <form @submit.prevent="editSubCategory">
-
-                                <div class="field">
-                                    <label class="label is-size-7">Category Name</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="item.category" placeholder="Enter category">
-                                    </div>
+                </div>
+            </section>
+            <!-- Edit City -->
+            <section v-if="module == 'cities' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editCity">
+                            <div class="field">
+                                <label class="label is-size-7">State Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.state" :class="{'dirty': cErrors.state}">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                    </select>
                                 </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Sub Category Name</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="item.name" placeholder="Enter Subcategory">
-                                    </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">City Name</label>
+                                <div class="control">
+                                    <CityDropdown 
+                                    class="mt-1 navbar-item has-dropdown is-hoverable"
+                                    :class="{'dirty': cErrors.name}" 
+                                    :stateName="item.state"
+                                    v-model="item.name"  
+                                    />
                                 </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Slug</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="item.slug" placeholder="Enter Slug">
-                                    </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">City Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': cErrors.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter City Slug" 
+                                    @input="onlyAlphaNumber">
                                 </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Page Title</label>
-                                    <div class="control">
-                                        <input class="input is-small" type="text" v-model="item.page_title" placeholder="Enter Page Title">
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label class="label is-size-7">Page Content</label>
-                                    <div class="control">
-                                    <client-only>
-                                        <Editor  @input="syncEditorValue2" v-model="item.page_content" :value="item.page_content"  /> 
-                                    </client-only>
-                                    </div>
-                                </div>
-                                <button type="submit" class="button is-primary is-small">Save</button> 
-                                <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
-                            </form>
-                        </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
                     </div>
-                </section> 
-            </template>
-
+                </div>
+            </section>
+        </template>
+        <!-- Localities Module -->
+        <template v-if="module == 'localities'">
+            <!-- Add Locality -->
+            <section v-if="module == 'localities' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{localityFormData}} -->
+                        <form @submit.prevent="addLocality">
+                            <div class="field">
+                                <label class="label is-size-7">State Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="localityFormData.state" :class="{'dirty': localityErrors.state}" @change="getCities">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">City Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="localityFormData.city" :class="{'dirty': localityErrors.city}">
+                                        <option  selected="selected" >---Select a city---</option>
+                                        <option v-for="(city, index) in cities" :key="index">{{ city.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Locality Name</label>
+                                <div class="control">
+                                    <LocalityDropdown
+                                    class="mt-1 navbar-item has-dropdown is-hoverable"
+                                    :class="{'dirty': localityErrors.name}" 
+                                    :stateName="localityFormData.state"
+                                    :cityName="localityFormData.city"
+                                    v-model="localityFormData.name"
+                                    @childEvent="makeSlug('localities')"  
+                                    />
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Locality Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': localityErrors.slug}" 
+                                    v-model="localityFormData.slug"  
+                                    placeholder="Enter Locality Slug" 
+                                    @input="onlyAlphaNumber">
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- Edit Locality -->
+            <section v-if="module == 'localities' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editLocality">
+                            <div class="field">
+                                <label class="label is-size-7">State Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.state" :class="{'dirty': lErrors.state}" @change="getCities">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">City Name</label>       
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.city" :class="{'dirty': lErrors.city}">
+                                        <option  selected="selected" >---Select a city---</option>
+                                        <option v-for="(city, index) in cities" :key="index">{{ city.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Locality Name</label>
+                                <div class="control">
+                                    <LocalityDropdown
+                                    class="mt-1 navbar-item has-dropdown is-hoverable"
+                                    :class="{'dirty': lErrors.name}" 
+                                    :stateName="item.state"
+                                    :cityName="item.city"
+                                    v-model="item.name"  
+                                    />
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Locality Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': lErrors.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter Locality Slug" 
+                                    @input="onlyAlphaNumber">
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </template>
+        <!-- Categories Module -->
+        <template v-if="module == 'categories'">
+            <!-- Add Category -->
+            <section v-if="module == 'categories' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{categoryFormData}} -->
+                        <form @submit.prevent="addCategory">
+                            <div class="field">
+                                <label class="label is-size-7">Category Name</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': categoryErrors.name}" 
+                                    v-model="categoryFormData.name"  
+                                    placeholder="Enter Category Name"
+                                    @input="makeSlug('categories')">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Category Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': categoryErrors.slug}" 
+                                    v-model="categoryFormData.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Title</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': categoryErrors.page_title}" 
+                                    v-model="categoryFormData.page_title"  
+                                    placeholder="Enter Page Title" 
+                                    @input="onlyAlpha">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Content</label>
+                                <div class="control">
+                                    <client-only>
+                                        <QuillEditor  v-model="categoryFormData.page_content"  />
+                                    </client-only>
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- Edit Category -->
+            <section v-if="module == 'categories' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editCategory">
+                            <div class="field">
+                                <label class="label is-size-7">Category Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': catErrors.name}" 
+                                    v-model="item.name"  
+                                    placeholder="Enter Category Name" 
+                                    @input="makeSlug('categories')">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Category Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': item.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    @input="changeCategorySlug"
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Title</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': catErrors.page_title}" 
+                                    v-model="item.page_title"  
+                                    placeholder="Enter Page Title" 
+                                    @input="onlyAlpha">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Content</label>
+                                <div class="control">
+                                    <client-only>
+                                        <QuillEditor  v-model="item.page_content"  />
+                                    </client-only>
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </template>
+        <!-- Subcategories Module -->
+        <template v-if="module == 'subcategories'">
+            <!-- Add Category -->
+            <section v-if="module == 'subcategories' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{subCategoryFormData}} -->
+                        <form @submit.prevent="addSubcategory">
+                            <div class="field">
+                                <label class="label is-size-7">Category Name</label>   
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="subCategoryFormData.category" :class="{'dirty': subCategoryErrors.category}" @change="changeSlugAdd">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in categories" :key="index"  :data-slug="category.slug" >{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCategoryErrors.name}" 
+                                    v-model="subCategoryFormData.name"  
+                                    placeholder="Enter Subcategory Name" 
+                                    @input="makeSlug('subcategories')">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCategoryErrors.slug}" 
+                                    v-model="subCategoryFormData.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Title</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCategoryErrors.page_title}" 
+                                    v-model="subCategoryFormData.page_title"  
+                                    placeholder="Enter Page Title" 
+                                    @input="onlyAlpha">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Content</label>
+                                <div class="control">
+                                    <client-only>
+                                        <QuillEditor  v-model="subCategoryFormData.page_content"  />
+                                    </client-only>
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- Edit Subcastegory -->
+            <section v-if="module == 'subcategories' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editSubcategory">
+                            <div class="field">
+                                <label class="label is-size-7">Category Name</label>  
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.category" :class="{'dirty': subCatErrors.category}" @change="changeSlugSave">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in categories" :key="index"  :data-slug="category.slug" >{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCatErrors.name}" 
+                                    v-model="item.name"  
+                                    placeholder="Enter Subcategory Name" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCatErrors.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Title</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': subCatErrors.page_title}" 
+                                    v-model="item.page_title"  
+                                    placeholder="Enter Page Title" 
+                                    @input="onlyAlpha">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Page Content</label>
+                                <div class="control">
+                                    <client-only>
+                                        <QuillEditor  v-model="item.page_content"  />
+                                    </client-only>
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </template>
+        <!-- Services Module -->
+        <template v-if="module == 'services'">
+            <!-- Add Service -->
+            <section v-if="module == 'services' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{serviceFormData}}<br/> -->
+                        <!-- {{subcategories}} -->
+                        <form @submit.prevent="addService">
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>   
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="serviceFormData.subcategory" :class="{'dirty': serviceErrors.subcategory}" @change="changeSlugAdd2">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in subcategories" :key="index"  :data-slug="category.slug" :selected="{'selected': serviceFormData.subcategory == category.name}">{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': serviceErrors.name}" 
+                                    v-model="serviceFormData.name"  
+                                    placeholder="Enter Service Name" 
+                                    @input="makeSlug('services')">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': serviceErrors.slug}" 
+                                    v-model="serviceFormData.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- Edit Service -->
+            <section v-if="module == 'services' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editService">
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>  
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.subcategory" :class="{'dirty': eServiceErrors.subcategory}" @change="changeSlugSave2">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in subcategories" :key="index"  :data-slug="category.slug" :selected="{'selected': item.subcategory == category.name}">{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': eServiceErrors.name}" 
+                                    v-model="item.name"  
+                                    placeholder="Enter Subcategory Name" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': eServiceErrors.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </template>
+        <!-- Keywords Module -->
+        <template v-if="module == 'keywords'">
+            <!-- Add Keyword -->
+            <section v-if="module == 'keywords' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{keywordFormData}} -->
+                        <form @submit.prevent="addKeyword">
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>   
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="keywordFormData.subcategory" :class="{'dirty': keywordErrors.subcategory}" @change="changeSlugAdd3">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in subcategories" :key="index"  :data-slug="category.slug" :selected="{'selected': keywordFormData.subcategory == category.name}">{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Keyword Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': keywordErrors.name}" 
+                                    v-model="keywordFormData.name"  
+                                    placeholder="Enter Service Name" 
+                                    @input="makeSlug('keywords')">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Keyword Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': keywordErrors.slug}" 
+                                    v-model="keywordFormData.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-primary is-small">
+                                 Add <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- Edit Keyword -->
+            <section v-if="module == 'keywords' && item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <!-- {{item}} -->
+                        <form @submit.prevent="editKeyword">
+                            <div class="field">
+                                <label class="label is-size-7">Subcategory Name</label>  
+                                <div class="select is-small is-fullwidth" >
+                                    <select  v-model="item.subcategory" :class="{'dirty': kErrors.subcategory}" @change="changeSlugSave3">
+                                        <option  selected="selected" >---Select a state---</option>
+                                        <option v-for="(category, index) in subcategories" :key="index"  :data-slug="category.slug" :selected="{'selected': item.subcategory == category.name}">{{ category.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Name</label>
+                                <div class="control">
+                                <input type="text" class="input is-small" 
+                                    :class="{'dirty': kErrors.name}" 
+                                    v-model="item.name"  
+                                    placeholder="Enter Subcategory Name" 
+                                    >
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-size-7">Service Slug</label>
+                                <div class="control">
+                                    <input type="text" class="input is-small" 
+                                    :class="{'dirty': kErrors.slug}" 
+                                    v-model="item.slug"  
+                                    placeholder="Enter Category Slug" 
+                                    >
+                                </div>
+                            </div>
+                            <button type="submit" class="button is-small is-primary">Save</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </template>
         <!-- Businesses Module -->
         <template v-if="module == 'businesses'">
-
             <!-- Add Business -->
             <section v-if="module == 'businesses' && !item">
+            <!-- {{authDataStore.authData.email}} -->
+                <!-- {{businessFormData}} -->
+                <!-- {{businessFormData.business_categoryslug}} -->
                 <form @submit.prevent="addBusiness">
                     <div class="columns">
                         <div class="column">
@@ -768,11 +1819,11 @@ const onFileChangeSave = (event) => {
                                     :class="{'dirty': businessErrors.business_name}" 
                                     v-model="businessFormData.business_name"  
                                     placeholder="Enter Business Name" 
-                                    @input="makeSlugAdd">
+                                    @input="makeSlug('businesses')">
                                 </div>
                             </div>
                         </div>
-                        <div class="column">
+                        <div class="column" v-if="authDataStore.authData.role != 'User'">
                             <div class="field">
                                 <label class="label is-size-7">Business Slug</label>
                                 <div class="control">
@@ -784,42 +1835,206 @@ const onFileChangeSave = (event) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="columns">
-                        <div class="column is-one-fifth">
+                        <div class="column ">
                             <div class="field">
-                                <label class="label is-size-7">Business Category</label>
-                                <div class="select is-small" :class="{'is-danger': businessErrors.business_category}">
-                                    <select  id="scat" v-model="businessFormData.business_category" @change="changeServicesAdd">
+                                <label class="label is-size-7">Business Category</label>       
+                                <div class="select is-small is-fullwidth" :class="{'is-danger': businessErrors.business_category}">
+                                    <select  v-model="businessFormData.business_category" :class="{'dirty': businessErrors.business_category}" @change="changeSlugAdd4">
                                         <option  selected="selected" >---Select a category---</option>
-                                        <option v-for="scat in scats" :key="scat">{{ scat }}</option>
+                                        <option v-for="(category, index) in subcategories" :key="index" :data-slug="category.slug">{{ category.name }}</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column is-four-fifth">
-                            <div class="field" v-if="services">
-                                <div class="block">
-                                    <label class="label is-size-7">Business Services</label>
-                                    <span class="button is-seconday is-light is-small ml-1 mt-1" v-for="service in services?.services"
-                                        :key="service" @click="addBusinessServices1(service)">
-                                        {{ service }}
-                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="columns">
                         <div class="column">
-                            <div class="block">
-                                    <span class="tag is-primary is-light is-small ml-1" v-for="service in businessFormData.business_services">
-                                        {{ service }}
-                                        <button class="delete is-primary" @click="removeBusinessServices1(service)"></button>
-                                    </span>
+
+                            <div class="field">
+                                <label class="label is-size-7">Business Phone</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" maxlength="11"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="businessFormData.business_phone"
+                                        placeholder="Enter business_phone">
+                                        
                                 </div>
                             </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Email</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text"
+                                        oninput="this.value = this.value.replace(/[^0-9a-zA-z.-_@]/g, '');"
+                                        v-model="businessFormData.business_email" placeholder="Enter business_email">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Website</label>
+                                <div class="control">
+                                    <input class="input is-small" type="url" v-model="businessFormData.business_website"
+                                        placeholder="Enter business_website">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column" v-if="authDataStore.authData.role == 'Admin'">
+                            <div class="field">
+                                <label class="label is-size-7">Business Ownership</label>
+                                <div class="control">
+                                    <label class="radio">
+                                        <input type="radio" value="Verifiefd" v-bind="businessFormData.business_ownership == 'Verifiefd' ? checked : ''" v-model="businessFormData.business_ownership"
+                                            @change="changeOwnershipAdd">
+                                        <span class=" is-size-7 "> Verifiefd</span>
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" value="Unverifiefd"  v-bind="businessFormData.business_ownership == 'Unverifiefd' ? checked : ''"  v-model="businessFormData.business_ownership"
+                                            @change="changeOwnershipAdd">
+                                            <span class=" is-size-7"> Unverifiefd</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="field">
+                                <label class="label is-size-7">Address</label>
+                                <div class="columns">
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">Business Address</label>
+                                            <div class="control">
+                                                <input class="input is-small" type="text"  
+                                                :class="{'dirty': businessErrors.business_address}" 
+                                                v-model="businessFormData.business_address"  
+                                                placeholder="Enter Business Address"
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">State Name</label>       
+                                            <div class="select is-small is-fullwidth"  >
+                                                <select  v-model="businessFormData.business_state"  :class="{'dirty': businessErrors.business_state}"  @change="getCities">
+                                                    <option  selected="selected" >---Select a state---</option>
+                                                    <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">City Name</label>       
+                                            <div class="select is-small is-fullwidth" >
+                                                <select  v-model="businessFormData.business_city"  :class="{'dirty': businessErrors.business_city}" @change="getLocalities2">
+                                                    <option  selected="selected" >---Select a city---</option>
+                                                    <option v-for="(city, index) in cities" :key="index" :data-state="businessFormData.business_state" :data-city="businessFormData.business_city" >{{ city.name }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">Locality Name</label>
+                                            <div class="select is-small is-fullwidth" >
+                                            <select  v-model="businessFormData.business_locality" :class="{'dirty': businessErrors.business_locality}" @change="changeSlugAdd5">
+                                                <option  selected="selected" >---Select a locality---</option>
+                                                <option v-for="(locality, index) in localities" :key="index"  :data-slug="locality.slug" :selected="{'selected': businessFormData.business_locality == locality.name}">{{ locality.name }}</option>
+                                            </select>
+                                        </div>
+
+                                            <!-- <div class="control">
+                                                <LocalityDropdown
+                                                class="mt-1 navbar-item has-dropdown is-hoverable"
+                                                :stateName="businessFormData.business_state"
+                                                :cityName="businessFormData.business_city"
+                                                v-model="businessFormData.business_locality"
+                                                />
+                                            </div> -->
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="control">
+                                            <label class="label is-size-7">Business Pin</label>
+                                            <div class="control">
+                                                <input class="input is-small" type="text"  
+                                                :class="{'dirty': businessErrors.business_pin}" 
+                                                v-model="businessFormData.business_pin"  
+                                                placeholder="Enter Business Pin"
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label is-size-7">Business Latitude</label>
+                                    <div class="control">
+                                        <input class="input is-small" type="text" maxlength="10"
+                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
+                                            v-model="businessFormData.business_latitude" placeholder="Enter business_latitude">
+                                    </div>
+                                </div>
+                            </div>
+
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Longitude</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" maxlength="10"
+                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
+                                        v-model="businessFormData.business_longitude"  placeholder="Enter business_longitude">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                            <div class="column">
+                                <Map :lat="businessFormData.business_latitude" :long="businessFormData.business_longitude"  
+                                style="border:0; height:200px" allowfullscreen=false />
+                            </div>
+                            </div>
+
+
+                        <div class="field">
+                            <label class="label is-size-7">Business Social</label>
+                            <div class="columns">
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Facebook</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="businessFormData.business_social.facebook"
+                                                placeholder="facebook link">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Instagram</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="businessFormData.business_social.instagram"
+                                                placeholder="instgram link">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Youtube</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="businessFormData.business_social.youtube"
+                                                placeholder="youtube link">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     <div class="columns">
                         <div class="column">
                             <div class="field">
@@ -919,203 +2134,18 @@ const onFileChangeSave = (event) => {
                             </div>
                         </div>
                     </div>
-
                     <div class="columns">
-                        <div class="column">
-
-                            <div class="field">
-                                <label class="label is-size-7">Business Phone</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="11"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="businessFormData.business_phone"
-                                        placeholder="Enter business_phone">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Email</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text"
-                                        oninput="this.value = this.value.replace(/[^0-9a-zA-z.-_@]/g, '');"
-                                        v-model="businessFormData.business_email" placeholder="Enter business_email">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Website</label>
-                                <div class="control">
-                                    <input class="input is-small" type="url" v-model="businessFormData.business_website"
-                                        placeholder="Enter business_website">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Ownership</label>
-                                <div class="control">
-                                    <label class="radio">
-                                        <input type="radio" value="Verifiefd" v-bind="businessFormData.business_ownership == 'Verifiefd' ? checked : ''" v-model="businessFormData.business_ownership"
-                                            @change="changeOwnershipAdd">
-                                        <span class=" is-size-7 "> Verifiefd</span>
-                                    </label>
-                                    <label class="radio">
-                                        <input type="radio" value="Unverifiefd"  v-bind="businessFormData.business_ownership == 'Unverifiefd' ? checked : ''"  v-model="businessFormData.business_ownership"
-                                            @change="changeOwnershipAdd">
-                                            <span class=" is-size-7"> Unverifiefd</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Address</label>
-                                <div class="columns">
-                                    <div class="column ">
-                                        <div class="field">
-                                            <label class="label is-size-7">Business Address</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': businessErrors.business_address}" 
-                                                v-model="businessFormData.business_address"  
-                                                placeholder="Enter Business Address"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business Locality</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text" 
-                                                v-model="businessFormData.business_locality"
-                                                placeholder="Enter Business Locality"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business City</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': businessErrors.business_city}" 
-                                                v-model="businessFormData.business_city"  
-                                                placeholder="Enter Business City"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business State</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': businessErrors.business_state}" 
-                                                v-model="businessFormData.business_state"  
-                                                placeholder="Enter Business State"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business Pin</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': businessErrors.business_pin}" 
-                                                v-model="businessFormData.business_pin"  
-                                                placeholder="Enter Business Pin"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="field">
-                                <label class="label is-size-7">Business Social</label>
-                                <div class="columns">
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Facebook</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="businessFormData.business_social.facebook"
-                                                    placeholder="facebook link">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Instagram</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="businessFormData.business_social.instagram"
-                                                    placeholder="instgram link">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Youtube</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="businessFormData.business_social.youtube"
-                                                    placeholder="youtube link">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                            </div>
-
-                            <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Latitude</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="10"
-                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
-                                        v-model="businessFormData.business_latitude" placeholder="Enter business_latitude">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Longitude</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="10"
-                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
-                                        v-model="businessFormData.business_longitude"  placeholder="Enter business_longitude">
-                                </div>
-                            </div>
-                        </div>
-                            </div>
-
-                            
-                        <div class="columns">
-                            <div class="column">
-                                <Map :lat="businessFormData.business_latitude" :long="businessFormData.business_longitude"  
-                                style="border:0; height:320px" allowfullscreen=false />
-                            </div>
-                            </div>
-                            <div class="columns">
-                                <div class="column">
-                            <div class="field">
+                        <div class="column"  >
+                            <div class="field" v-if="authDataStore.authData.role != 'User' && authDataStore.authData.role != 'Staff'">
                                 <label class="label is-size-7">Business Description</label>
                                 <div class="control">
                                     <client-only>
-                                        <Editor  @input="syncEditorValue1" v-model="businessFormData.business_description" :value="businessFormData.business_description"  /> 
+                                        <QuillEditor  v-model="businessFormData.business_description"  />
                                     </client-only>
                                 </div>
                             </div>
 
-                            <div class="field">
+                            <div class="field" v-if="authDataStore.authData.role != 'User' && authDataStore.authData.role != 'Staff'">
                                 <label class="label is-size-7">
                                     <div class="icon-text"> Business Faqs </div>
                                 </label>
@@ -1130,7 +2160,7 @@ const onFileChangeSave = (event) => {
                             </div>
                             <div class="file is-small has-name is-fullwidth">
                                 <label class="file-label">
-                                    <input class="file-input is-small" type="file" multiple @change="onFileChangeAdd">
+                                    <input class="file-input is-small" type="file" ref="fileInput"  multiple @change="onFileChangeAdd">
                                     <span class="file-cta">
                                         <span class="file-icon">
                                             <i class="fas fa-upload"></i>
@@ -1146,15 +2176,15 @@ const onFileChangeSave = (event) => {
                             </div>
                             <div class="field">
                                 <div class="control mt-6">
-                                    <span class="tag  is-small" v-for="image in businessFormData.business_images">
-                                        <img :src="`${image}`" width="100" height="50" />
+                                    <span class="tag  is-small" v-for="image in businessFormData.images">
+                                        <img :src="`data:image/jpeg;base64,${image}`" width="100" height="50" />
                                         <button class="delete is-small"
                                             @click="removeImageFromBusinessAdd(image)"></button>
                                     </span>
                                 </div>
                             </div>
                             <button type="submit" class="button is-primary is-small">Add</button> 
-                            <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
                         </div>
                     </div>
                 </form>
@@ -1162,7 +2192,6 @@ const onFileChangeSave = (event) => {
 
             <!-- Edit Business -->
             <section v-if="module == 'businesses' && item">
-            {{item}}
                 <form @submit.prevent="editBusiness">
                     <div class="columns">
                         <div class="column">
@@ -1173,11 +2202,11 @@ const onFileChangeSave = (event) => {
                                     :class="{'dirty': bErrors.business_name}" 
                                     v-model="item.business_name"  
                                     placeholder="Enter Business Name" 
-                                    @input="makeSlugSave">
+                                    @input="makeSlug('businesses')">
                                 </div>
                             </div>
                         </div>
-                        <div class="column">
+                        <div class="column" v-if="authDataStore.authData.role != 'User'">
                             <div class="field">
                                 <label class="label is-size-7">Business Slug</label>
                                 <div class="control">
@@ -1189,42 +2218,197 @@ const onFileChangeSave = (event) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="columns">
-                        <div class="column is-one-fifth">
+                        <div class="column ">
                             <div class="field">
-                                <label class="label is-size-7">Business Category</label>
-                                <div class="select is-small" :class="{'is-danger': bErrors.business_category}">
-                                    <select  id="scat" v-model="item.business_category" @change="changeServicesSave">
+                                <label class="label is-size-7">Business Category</label>       
+                                <div class="select is-small is-fullwidth" :class="{'is-danger': bErrors.business_category}">
+                                    <select  v-model="item.business_category" :class="{'dirty': bErrors.business_category}" @change="changeSlugSave4">
                                         <option  selected="selected" >---Select a category---</option>
-                                        <option v-for="scat in scats" :key="scat">{{ scat }}</option>
+                                        <option v-for="(category, index) in subcategories" :key="index" :data-slug="category.slug">{{ category.name }}</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column is-four-fifth">
-                            <div class="field" v-if="services">
-                                <div class="block">
-                                    <label class="label is-size-7">Business Services</label>
-                                    <span class="button is-seconday is-light is-small ml-1 mt-1" v-for="service in services?.services"
-                                        :key="service" @click="addBusinessServices2(service)">
-                                        {{ service }}
-                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="columns">
                         <div class="column">
-                            <div class="block">
-                                    <span class="tag is-primary is-light is-small ml-1" v-for="service in item.business_services">
-                                        {{ service }}
-                                        <button class="delete is-primary" @click="removeBusinessServices2(service)"></button>
-                                    </span>
+
+                            <div class="field">
+                                <label class="label is-size-7">Business Phone</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" maxlength="11"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="item.business_phone"
+                                        placeholder="Enter business_phone">
+                                        
                                 </div>
                             </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Email</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text"
+                                        oninput="this.value = this.value.replace(/[^0-9a-zA-z.-_@]/g, '');"
+                                        v-model="item.business_email" placeholder="Enter business_email">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Website</label>
+                                <div class="control">
+                                    <input class="input is-small" type="url" v-model="item.business_website"
+                                        placeholder="Enter business_website">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field" v-if="authDataStore.authData.role == 'Admin'">
+                                <label class="label is-size-7">Business Ownership</label>
+                                <div class="control">
+                                    <label class="radio">
+                                        <input type="radio" value="Verifiefd" v-bind="item.business_ownership == 'Verifiefd' ? checked : ''" v-model="item.business_ownership"
+                                            @change="changeOwnershipAdd">
+                                        <span class=" is-size-7 "> Verifiefd</span>
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" value="Unverifiefd"  v-bind="item.business_ownership == 'Unverifiefd' ? checked : ''"  v-model="item.business_ownership"
+                                            @change="changeOwnershipAdd">
+                                            <span class=" is-size-7"> Unverifiefd</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="field">
+                                <label class="label is-size-7">Address</label>
+                                <div class="columns">
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">Business Address</label>
+                                            <div class="control">
+                                                <input class="input is-small" type="text"  
+                                                :class="{'dirty': bErrors.business_address}" 
+                                                v-model="item.business_address"  
+                                                placeholder="Enter Business Address"
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">State Name</label>       
+                                            <div class="select is-small is-fullwidth"  >
+                                                <select  v-model="item.business_state"  :class="{'dirty': bErrors.business_state}"  @change="getCities">
+                                                    <option  selected="selected" >---Select a state---</option>
+                                                    <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">City Name ({{item.business_city}})</label> 
+                                            <div class="select is-small is-fullwidth" >
+                                                <select  v-model="item.business_city"  :class="{'dirty': bErrors.business_city}" @change="getLocalities3">
+                                                    <option  selected="selected" >---Select a city---</option>
+                                                    <option v-for="(city, index) in cities" :key="index" :data-state="item.business_state" :data-city="item.business_city" >{{ city.name }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="column ">
+                                        <div class="field">
+                                            <label class="label is-size-7">Locality Name({{item.business_locality}})</label>
+                                            <div class="select is-small is-fullwidth" >
+                                                <select  v-model="item.business_locality" :class="{'dirty': bErrors.business_locality}" @change="changeSlugSave5">
+                                                    <option  selected="selected" >---Select a locality---</option>
+                                                    <option v-for="(locality, index) in localities3" :key="index"  :data-slug="locality.slug" :selected="{'selected': item.business_locality == locality.name}">{{ locality.name }}</option>
+                                                </select>
+                                            </div>    
+                                        </div>
+                                    </div>
+                                    <div class="column ">
+                                        <div class="control">
+                                            <label class="label is-size-7">Business Pin</label>
+                                            <div class="control">
+                                                <input class="input is-small" type="text"  
+                                                v-model="item.business_pin"  
+                                                placeholder="Enter Business Pin"
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label is-size-7">Business Latitude</label>
+                                    <div class="control">
+                                        <input class="input is-small" type="text" maxlength="10"
+                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
+                                            v-model="item.business_latitude" placeholder="Enter business_latitude">
+                                    </div>
+                                </div>
+                            </div>
+
+                        <div class="column">
+                            <div class="field">
+                                <label class="label is-size-7">Business Longitude</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" maxlength="10"
+                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
+                                        v-model="item.business_longitude"  placeholder="Enter business_longitude">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                            <div class="column">
+                                <Map :lat="item.business_latitude" :long="item.business_longitude"  
+                                style="border:0; height:200px" allowfullscreen=false />
+                            </div>
+                            </div>
+
+
+                        <div class="field">
+                            <label class="label is-size-7">Business Social</label>
+                            <div class="columns">
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Facebook</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="item.business_social.facebook"
+                                                placeholder="facebook link">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Instagram</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="item.business_social.instagram"
+                                                placeholder="instgram link">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column ">
+                                    <div class="control">
+                                        <label class="label is-size-7">Youtube</label>
+                                        <div class="control">
+                                            <input class="input is-small" type="url" v-model="item.business_social.youtube"
+                                                placeholder="youtube link">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     <div class="columns">
                         <div class="column">
                             <div class="field">
@@ -1324,203 +2508,18 @@ const onFileChangeSave = (event) => {
                             </div>
                         </div>
                     </div>
-
                     <div class="columns">
                         <div class="column">
-
-                            <div class="field">
-                                <label class="label is-size-7">Business Phone</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="11"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" v-model="item.business_phone"
-                                        placeholder="Enter business_phone">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Email</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text"
-                                        oninput="this.value = this.value.replace(/[^0-9a-zA-z.-_@]/g, '');"
-                                        v-model="item.business_email" placeholder="Enter business_email">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Website</label>
-                                <div class="control">
-                                    <input class="input is-small" type="url" v-model="item.business_website"
-                                        placeholder="Enter business_website">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Ownership</label>
-                                <div class="control">
-                                    <label class="radio">
-                                        <input type="radio" value="Verifiefd" v-bind="item.business_ownership == 'Verifiefd' ? checked : ''" v-model="item.business_ownership"
-                                            @change="changeOwnershipSave">
-                                        <span class=" is-size-7 "> Verifiefd</span>
-                                    </label>
-                                    <label class="radio">
-                                        <input type="radio" value="Unverifiefd"  v-bind="item.business_ownership == 'Unverifiefd' ? checked : ''"  v-model="item.business_ownership"
-                                            @change="changeOwnershipSave">
-                                            <span class=" is-size-7"> Unverifiefd</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Address</label>
-                                <div class="columns">
-                                    <div class="column ">
-                                        <div class="field">
-                                            <label class="label is-size-7">Business Address</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': bErrors.business_address}" 
-                                                v-model="item.business_address"  
-                                                placeholder="Enter Business Address"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business Locality</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text" 
-                                                v-model="item.business_locality"
-                                                placeholder="Enter Business Locality"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business City</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': bErrors.business_city}" 
-                                                v-model="item.business_city"  
-                                                placeholder="Enter Business City"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business State</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': bErrors.business_state}" 
-                                                v-model="item.business_state"  
-                                                placeholder="Enter Business State"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Business Pin</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="text"  
-                                                :class="{'dirty': businessErrors.business_pin}" 
-                                                v-model="item.business_pin"  
-                                                placeholder="Enter Business Pin"
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="field">
-                                <label class="label is-size-7">Business Social</label>
-                                <div class="columns">
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Facebook</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="item.business_social.facebook"
-                                                    placeholder="facebook link">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Instagram</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="item.business_social.instagram"
-                                                    placeholder="instgram link">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="column ">
-                                        <div class="control">
-                                            <label class="label is-size-7">Youtube</label>
-                                            <div class="control">
-                                                <input class="input is-small" type="url" v-model="item.business_social.youtube"
-                                                    placeholder="youtube link">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                            </div>
-
-                            <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Latitude</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="10"
-                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
-                                        v-model="item.business_latitude" placeholder="Enter business_latitude">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="column">
-                            <div class="field">
-                                <label class="label is-size-7">Business Longitude</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" maxlength="10"
-                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
-                                        v-model="item.business_longitude"  placeholder="Enter business_longitude">
-                                </div>
-                            </div>
-                        </div>
-                            </div>
-
-                            
-                        <div class="columns">
-                            <div class="column">
-                                <Map :lat="item.business_latitude" :long="item.business_longitude"  
-                                style="border:0; height:320px" allowfullscreen=false />
-                            </div>
-                            </div>
-                            <div class="columns">
-                                <div class="column">
-                            <div class="field">
+                            <div class="field" v-if="authDataStore.authData.role != 'User' && authDataStore.authData.role != 'Staff'">
                                 <label class="label is-size-7">Business Description</label>
                                 <div class="control">
                                     <client-only>
-                                        <Editor  @input="syncEditorValue2" v-model="item.business_description" :value="item.business_description"  /> 
+                                        <QuillEditor  v-model="item.business_description"  />
                                     </client-only>
                                 </div>
                             </div>
 
-                            <div class="field">
+                            <div class="field" v-if="authDataStore.authData.role != 'User' && authDataStore.authData.role != 'Staff'">
                                 <label class="label is-size-7">
                                     <div class="icon-text"> Business Faqs </div>
                                 </label>
@@ -1535,7 +2534,7 @@ const onFileChangeSave = (event) => {
                             </div>
                             <div class="file is-small has-name is-fullwidth">
                                 <label class="file-label">
-                                    <input class="file-input is-small" type="file" multiple @change="onFileChangeSave">
+                                    <input class="file-input is-small" type="file" ref="fileInput"  multiple @change="onFileChangeSave">
                                     <span class="file-cta">
                                         <span class="file-icon">
                                             <i class="fas fa-upload"></i>
@@ -1551,15 +2550,17 @@ const onFileChangeSave = (event) => {
                             </div>
                             <div class="field">
                                 <div class="control mt-6">
-                                    <span class="tag  is-small" v-for="image in item.business_images">
-                                        <img :src="`${image}`" width="100" height="50" />
+                                    <span class="tag  is-small" v-for="image in item.images">
+                                        <img :src="`data:image/jpeg;base64,${image}`" width="100" height="50" />
                                         <button class="delete is-small"
                                             @click="removeImageFromBusinessSave(image)"></button>
                                     </span>
                                 </div>
                             </div>
-                            <button type="submit" class="button is-primary is-small">Save</button> 
-                            <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
+                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button> 
+                            <button type="link" class="button is-light is-small ml-2" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
                         </div>
                     </div>
                 </form>
@@ -1610,6 +2611,28 @@ const onFileChangeSave = (event) => {
                                         Female
                                     </label>
                                 </div>
+                            </div>
+                            <div class="field">
+                                <label class="label is-small">Role</label>
+                                <div class="control">
+                                    <label class="radio">
+                                        <input type="radio" v-model="item.role"  @click="item.role = 'Staff'" value="Staff">
+                                        Staff
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" v-model="item.role"   @click="item.role = 'QC'" value="QC">
+                                        QC
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" v-model="item.role"   @click="item.role = 'User'" value="User">
+                                        User
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" v-model="item.role"   @click="item.role = 'Admin'" value="Admin">
+                                        Admin
+                                    </label>
+                                </div>
+
                             </div>
                             <div class="field">
                                 <label class="label is-small">Phone</label>
@@ -1679,7 +2702,9 @@ const onFileChangeSave = (event) => {
                             </div>
                             <div class="field">
                                 <label class="label is-small">&nbsp;</label>
-                                <button type="submit" class="button is-primary is-small">Save</button> 
+                                <button type="submit" class="button is-primary is-small">
+                                    Save <span class="spinner" v-if="isSpinner"></span>
+                                </button> 
                                 <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
                             </div>
                         </div>
@@ -1745,7 +2770,9 @@ const onFileChangeSave = (event) => {
                                 </div>
                             </div>
 
-                            <button type="submit" class="button is-primary is-small">Save</button> 
+                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button>  
                             <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
                         </form>
                     </div>
@@ -1901,7 +2928,9 @@ const onFileChangeSave = (event) => {
                            
                             <br/>
 
-                            <button type="submit" class="button is-primary is-small">Save</button> 
+                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button>  
                             <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
                         </form>
                     </div>
@@ -1914,7 +2943,46 @@ const onFileChangeSave = (event) => {
 
         <!-- Scripts Module -->
         <template v-if="module == 'scripts'">
+            <!-- Add Script -->
+            <section v-if="module == 'scripts' && !item">
+                <div class="columns">
+                    <div class="column is-half">
+                        <form  @submit.prevent="addScript">
 
+                            <div class="field">
+                                <label class="label is-size-7">Name</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" v-model="scriptFormData.name" 
+                                        placeholder="Enter Name" >
+                                </div>
+                            </div>
+                            
+                            <div class="field">
+                                <label class="label is-size-7">Type</label>
+                                <div class="control">
+                                    <input class="input is-small" type="text" v-model="scriptFormData.type"
+                                        placeholder="Enter Type" >
+                                </div>
+                            </div>
+                            
+                             <div class="field">
+                                <label class="label is-size-7">Body</label>
+                                <div class="control">
+                                    <!-- <client-only>
+                                       <QuillEditor  v-model="scriptFormData.body"  />
+                                    </client-only> -->
+                                    <textarea class="textarea full-height" v-model="scriptFormData.body" ></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button>  
+                            <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
             <!-- Edit Script -->
             <section v-if="module == 'scripts' && item">
                 <div class="columns">
@@ -1938,22 +3006,18 @@ const onFileChangeSave = (event) => {
                             </div>
 
                             <div class="field">
-                                <label class="label is-size-7">Positions</label>
-                                <div class="control">
-                                    <input class="input is-small" type="text" v-model="item.positions"
-                                        placeholder="Enter Positions" >
-                                </div>
-                            </div>
-
-                            <div class="field">
                                 <label class="label is-size-7">Body</label>
                                 <div class="control">
-                                    <input class="input is-small" type="text" v-model="item.body"
-                                        placeholder="Enter Subcategory" >
+                                    <!-- <client-only>
+                                       <QuillEditor  v-model="item.body"  />
+                                    </client-only> -->
+                                    <textarea class="textarea full-height" v-model="item.body" ></textarea>
                                 </div>
                             </div>
 
-                            <button type="submit" class="button is-primary is-small">Save</button> 
+                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button>  
                             <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
                         </form>
                     </div>
@@ -2056,7 +3120,7 @@ const onFileChangeSave = (event) => {
                                             </div>
                                         </div>
                                         <div class=" column is-half">
-                                            <div class="field">
+                                            <!-- <div class="field">
                                                 <label class="label is-small">Locality</label>
                                                 <div class="control has-icons-left has-icons-right">
                                                     <input class="input is-small" type="text" placeholder="Locality" v-model="item.locality">
@@ -2083,6 +3147,35 @@ const onFileChangeSave = (event) => {
                                                     <i class="fas fa-check"></i>
                                                     </span>
                                                 </div>
+                                            </div> -->
+                                            <div class="field">
+                                                <label class="label is-size-7">State Name</label>       
+                                                <div class="select is-small is-fullwidth" >
+                                                    <select  v-model="item.state"  @change="getCities">
+                                                        <option  selected="selected" >---Select a state---</option>
+                                                        <option v-for="(state, index) in states" :key="index">{{ state.name }}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <label class="label is-size-7">City Name</label>       
+                                                <div class="select is-small is-fullwidth" >
+                                                    <select  v-model="item.city">
+                                                        <option  selected="selected" >---Select a city---</option>
+                                                        <option v-for="(city, index) in cities" :key="index">{{ city.name }}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <label class="label is-size-7">Locality Name</label>
+                                                <div class="control">
+                                                    <LocalityDropdown
+                                                    class="mt-1 navbar-item has-dropdown is-hoverable"
+                                                    :stateName="item.state"
+                                                    :cityName="item.city"
+                                                    v-model="item.locality"
+                                                    />
+                                                </div>
                                             </div>
                                             <div class="field">
                                                 <label class="label is-small">PIN</label>
@@ -2098,7 +3191,9 @@ const onFileChangeSave = (event) => {
                                             </div>
                                             <div class="field">
                                             <label class="label is-small">&nbsp;</label>
-                                            <button type="submit" class="button is-primary is-small">Save</button> 
+                                            <button type="submit" class="button is-primary is-small">
+                                 Save <span class="spinner" v-if="isSpinner"></span>
+                            </button>  
                                             <button type="link" class="button is-primary is-light is-small ml-2" v-show="showMessage"> {{ message }}</button>
                                         </div>
                                 </div>
@@ -2141,39 +3236,45 @@ const onFileChangeSave = (event) => {
         
     </template>
 </template>
-
 <style scoped>
-
+#editor {
+  height: 150px !important;
+}
 .ql-container {
   height: 150px !important;
   /* Add other CSS styles as needed */
 }
-
 .dirty{
-    border: 1px solid red;
+    border: 1px solid #f14668;
 }
-
 .good{
-    border: 1px solid #00b89c;
+    border: 1px solid #00c4a7;
 }
-
 .icon-dirty{
-    color: red;
+    color: #f14668;;
 }
 
 .icon-good{
-    color: #00b89c;
+    color: #00c4a7;
 }
-
 .text-dirty{
-    color: red;
+    color: #f14668;
 }
-
 .text-good{
-    color: #00b89c;
+    color: #00c4a7;
+}
+.spinner {
+  margin-left: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.9);
+  border-radius: 50%;
+  border-top: 1px solid #fff;
+  width: 12px;
+  height: 12px;
+  animation: spin 1s linear infinite;
 }
 
-
-
-
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>

@@ -15,7 +15,5 @@ export default defineEventHandler(async event => {
             res.message = 'New User Generated successfully'
         }
         return res
-    } catch (error) {
-        // console.log(error)
-    }
+    } catch (error) {}
 })

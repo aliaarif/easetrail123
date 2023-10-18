@@ -7,7 +7,5 @@ export default defineEventHandler(async (event) => {
             const meta = BusinessModel.findOne({ business_slug: params.slug }, {})
             return meta
         }
-    } catch (error) {
-
-    }
+    } catch (error) {}
 })

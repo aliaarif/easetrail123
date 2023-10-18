@@ -1,11 +1,9 @@
 import CategoryModel from "~~/server/models/Category";
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    const params = getQuery(event)
     try {
-
-        // const categories = CategoryModel.distinct('name', {})
-        const categories = CategoryModel.find()
-        return categories
+            return CategoryModel.find({status: 'Active'})
     } catch (error) {
         // // console.log(error)
     }

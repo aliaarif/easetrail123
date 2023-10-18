@@ -1,6 +1,9 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth";
 import { useAuthDataStore } from "@/stores/auth-data";
+const isLoading = ref(true)
+onBeforeMount(() => { isLoading.value = true });
+
 definePageMeta({
   middleware: "query",
 });
@@ -12,23 +15,14 @@ const { title, slug, pageTitle, pageType, meta, day } = useCommon();
 const router = useRouter();
 const city = router.currentRoute.value.params.city;
 const data = router.currentRoute.value.params.query;
-
-
-
-
-const loading = ref(false);
-
 const pageNo = ref(1);
-
 const contents = ref("");
-
 const metaContent = ref("");
-
 const images = ref([]);
 
 if (pageType.value == "Subcategories") {
   const { data: res } = await useAsyncData("res", () => {
-    return $fetch(`/api/query?category=${title(data)}`, {
+    return $fetch(`/api/query?slug=${data}`, {
       method: "get",
     });
   });
@@ -38,7 +32,7 @@ if (pageType.value == "Subcategories") {
 } else if (pageType.value == "Businesses") {
   const { data: res } = await useAsyncData("res", () => {
     return $fetch(
-      `/api/query?city=${title(city)}&subcategory=${title(data.split("-in-")[0])}`,
+      `/api/query?city=${title(city)}&subcategory=${data.split("-in-")[0]}`,
       {
         method: "get",
       }
@@ -47,14 +41,6 @@ if (pageType.value == "Subcategories") {
   contents.value = res.value;
   pageTitle.value = `${meta.value.page_title} in ${title(city)}`;
   metaContent.value = `${meta.value.page_content}`;
-  // if (process.client) {
-  //     window.addEventListener("scroll", ((event) => {
-  //         if (window.innerHeight + document.documentElement.scrollTop === document.scrollingElement.scrollHeight) {
-  //             fetchNew()
-  //             window.scrollTo(0, 100);
-  //         }
-  //     }));
-  // }
 } else if (pageType.value == "Business Details") {
   const { data: res } = await useAsyncData("res", () => {
     return $fetch(`/api/query?business_slug=${data.split("-biz-")[0]}`, {
@@ -64,29 +50,12 @@ if (pageType.value == "Subcategories") {
   contents.value = res.value;
   images.value = contents.value.business_images;
   metaContent.value = `${meta.value.page_content}`;
-  pageTitle.value = `${contents.value.business_name}`;
+  pageTitle.value = `${meta.value.page_title} in ${title(city)}`;
 } else if (pageType.value == "CMS") {
   metaContent.value = `Dummy Contents`;
   pageTitle.value = `Dummy Title`;
 }
 
-
-
-
-// const generateLead = async () => {
-//     useFetch("/api/save/lead", {
-//       method: "post",
-//       body: leadsFormData,
-//       watch:false
-//     }).then((res) => {
-//       message.value = res.data.value.message;
-//     });
-// };
-
-useHead({
-  title: `${pageTitle.value}`,
-  meta: [{ name: "description", content: metaContent.value }],
-});
 
 const componentName = ref(null)
 const propsObj = ref({
@@ -99,7 +68,10 @@ const propsObj = ref({
     pageType:pageType.value,
     day: day.value,
     contents: contents.value,
-    images: images.value
+    images: images.value,
+    business_images: contents.value.business_images,
+    authStore: authStore,
+    authDataStore: authDataStore
 })
 
 if (city == 'mobile') {
@@ -110,13 +82,23 @@ if (pageType.value == 'Subcategories' && data != 'profile') {
   componentName.value = 'Subcategories'
 }
 
-if (pageType.value == 'Business Details' && data != 'profile') {
-  componentName.value = 'BusinessDetails'
-}
-
 if (pageType.value == 'Businesses'  && data != 'profile') {
   componentName.value = 'BusinessList'
 }
+
+if (pageType.value == 'Business Details' && data != 'profile') {
+  pageTitle.value = contents.value.business_name
+  componentName.value = 'BusinessDetails'
+}
+
+useHead({
+  title: `${pageTitle.value}`,
+  meta: [{ name: "description", content: metaContent.value }],
+});
+
+onMounted(() => {
+  isLoading.value = false
+});
 
 </script>
 
@@ -139,15 +121,18 @@ if (pageType.value == 'Businesses'  && data != 'profile') {
   </template>
 
   <template v-else-if="pageType == 'Subcategories' && data != 'profile'">
-    <Subcategories :propsObj="propsObj"/>
+    <SubcategorySkeleton :count="propsObj.contents.length" width="100%" height="40px" v-if="isLoading"  />
+    <Subcategories :propsObj="propsObj" v-else/>
   </template>
 
   <template v-else-if="pageType == 'Businesses'  && data != 'profile'">
-    <BusinessList :propsObj="propsObj"/>
+    <BusinessListSkeleton :count="propsObj.contents.length" width="100%" height="200px" v-if="isLoading"  />
+    <BusinessList :propsObj="propsObj" v-else/>
   </template>
 
   <template v-else-if="pageType == 'Business Details' && data != 'profile'">
-    <BusinessDetails :propsObj="propsObj"/>
+    <BusinessDetailsSkeleton :count="propsObj.contents.length" width="100%" v-if="isLoading"  />
+    <BusinessDetails :propsObj="propsObj" v-else/>
   </template>
 </template>
 

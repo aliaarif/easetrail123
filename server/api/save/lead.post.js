@@ -1,15 +1,17 @@
 import LeadModel from "~~/server/models/Lead";
-export default defineEventHandler(async event => {
+export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const res = {}
-    try {
-        let result1 = await LeadModel.create(body)
-        res.status = 201
-        res.message = 'New Lead Generated successfully'
+    try {  
+        let count = await LeadModel.countDocuments({ subcategory: body.subcategory, name: body.name});
+        if (count) {
+            res.message = 'Already Submitted'
+        } else {
+            LeadModel.create(body)
+            res.message = 'Lead Submitted!'
+        }
         return res
     } catch (error) {
-        // console.log(error)
+        console.log(error)
     }
 })
-
-
