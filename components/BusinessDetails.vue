@@ -19,7 +19,7 @@ const increaseImageIndex = (index) => {
 </script>
 
 <template>
-<section>
+<div>
       <span class="is-left">
         <nav class="breadcrumb" aria-label="breadcrumbs">
           <ul>
@@ -47,7 +47,7 @@ const increaseImageIndex = (index) => {
             style="border: 1px solid black; max-height: 350px; max-width: 90%"
           >
             <img
-            :src="'/'+`${props.propsObj.images[sliderCurrentIndex]}`"
+            :src="`${props.propsObj.images[sliderCurrentIndex]}`"
               style="max-height: 300px; min-width: 100%"
               alt="Image"
             />
@@ -292,7 +292,7 @@ const increaseImageIndex = (index) => {
           </div>
         <br />
       </div>
-    </section>
+    </div>
 </template>
 
 <style scoped>

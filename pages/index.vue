@@ -1,204 +1,47 @@
 <script setup>
-const { city, slug, title } = useCommon();
+import { useCartStore } from "@/stores/cart";
+const cartStore = useCartStore();
+
 const isLoading = ref(true)
 onBeforeMount(() => { isLoading.value = true });
 useHead({
-  title: "Easetrail - List your Business Online and Connect with Customers Today!",
+  title: "Store -  A Multivendor Online Store",
   meta: [
     {
-      name: "Discover the Power of Visibility - Unlock your business's potential with free business listings on our platform. Increase your online presence and reach your target audience effortlessly. Join us today!",
-      content:
-        "Easetrail, is local search engine, provides Best Deals, Shop Online, Ticket Booking for Flights, Hotels, Movies, Buses and Cabs. You can also Order Food, Book Restaurant Table, View Menu, Book Doctors’ Appointments. Easetrail curates Social content, News, Videos and more from Top Publishers on all Trending Topics.",
+      name: "Dummy Name",
+      content: "Dummy Contents",
     },
   ],
 });
-
-
-
-
-onMounted(() => {
-  if (window !== "undefined") {
-    category.value = !localStorage.category
-      ? localStorage.setItem("category", "hire-on")
-      : slug(localStorage.category);
-    city.value = !localStorage.city
-      ? localStorage.setItem("city", "gurugram")
-      : title(localStorage.city);
-  }
-  isLoading.value = false
-});
-
-const category = ref("hire-on");
-const { data: categories } = await useAsyncData("categories", () => {
-  return $fetch(`/api/categories`, {
+const { data: products } = await useAsyncData("products", () => {
+  return $fetch(`http://dev.multivendor-api/api/products`, {
     method: "get",
   })
 });
 
-const { data: cityCount } = await useAsyncData("cityCount", () => {
-  return $fetch(`/api/cities?name=${city.value}`, {
-    method: "get",
-  })
-});
+// console.log(products.value.data)
 
-if (cityCount == 0) {
-  city.value = ''
-}
 
 </script>
 <template>
-
-
-      <div>
-        <CategorySkeleton :count="categories.length" width="100%" height="30px" v-if="isLoading"  />
-        
-        <section class="et-heading">
-          <h1 class="title">Search for Business, Places and Services.</h1>
-          <!-- <p class="description">Thoroughly tested and evaluated by our expert editors to help you make a more informed buying decision.</p> -->
-        </section>
-        
-        <div class="columns is-multiline is-mobile">
-          <div class="column is-3-tablet is-6-mobile" v-for="category in categories" :key="category._id">
-
-            <nuxt-link :to="`/${slug(city)}/${slug(category.slug)}`" class="grid-item box">
-              <img
-                :src="category.image"
-                style="width: 100px; height: 100px"
-                alt="Your Image"
-              />
-              <p>
-                <b>{{ category.name }}</b>
-              </p>
-            </nuxt-link>
+ 
+<div class="columns is-multiline is-mobile mt-2">
+    <div class="column is-3-tablet is-6-mobile animate__animated animate__flipInX" v-for="product in products.data" :key="product._id">
+        <div class="card product-card">
+            <div class="card-image">
+                <figure class="image is-4by3">
+                    <img src="https://via.placeholder.com/400x300" alt="Product Image">
+                </figure>
+            </div>
+            <div class="card-content">
+              <div class="mb-2">{{ product.name }}</div>
+              <div class="mb-2">₹{{ product.price }}</div>
+              <div class="mb-2">{{ product.vendor_id }}</div>
+              <CartBtn :product="product"/>
+            </div>
         </div>
-        
-        
-        </div>
-
-        <section class="inside-container">
-          <div class="container">
-            <h2 class="title is-3 has-text-black heading-ct">Now Live at</h2>
-            <div class="columns is-multiline is-mobile">
-           
-  <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              Malappuram
-            </div>
-          </div>
-          
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              test
-            </div>
-          </div>
-
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              hello
-            </div>
-          </div>
-
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              Malappuram
-            </div>
-          </div>
-
-
-   <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              Malappuram
-            </div>
-          </div>
-
-             <div class="column is-3-tablet is-6-mobile">
-            <div class="box stack">
-              Malappuram
-            </div>
-          </div>
-
-            </div>
-          </div>
-        </section>
-      </div>
-
-  
-  <!-- <section>
-  <ParentC />
-    <CategorySkeleton :count="categories.length" width="100%" height="30px" v-if="isLoading"  />
-    <template v-else>
-    <h3 class="title mt-6 mb-6">Search for Business, Places and Services.</h3>
-    <div class="columns is-multiline is-mobile is-variable is-2-tablet">
-      <div
-        class="column is-6-mobile is-4-tablet is-4-desktop is-3-widescreen"
-        v-for="category in categories"
-        :key="category._id"
-      >
-        <nuxt-link :to="`/${slug(city)}/${slug(category.slug)}`" class="grid-item box">
-          <img
-            :src="category.image"
-            style="width: 100px; height: 100px"
-            alt="Your Image"
-          />
-          <p>
-            <b>{{ category.name }}</b>
-          </p>
-        </nuxt-link>
-      </div>
     </div>
-  </template>
-  </section> 
-
-<section class="hero is-peach">
-    <div class="hero-body">
-      <div class="container">
- <h1 class="title is-3 has-text-black heading-ct">
-          Now Live at
-        </h1>
-
-        <div class="columns is-multiline is-mobile">
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              Malappuram
-            </div>
-          </div>
-          
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              test
-            </div>
-          </div>
-
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              hello
-            </div>
-          </div>
-
-          <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              Malappuram
-            </div>
-          </div>
-
-
-   <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              Malappuram
-            </div>
-          </div>
-
-             <div class="column is-3-tablet is-6-mobile">
-            <div class="box is-orange has-text-orange">
-              Malappuram
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section> -->
-
-
+</div>
 </template>
 <style scoped>
 .title {

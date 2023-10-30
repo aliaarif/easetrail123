@@ -65,7 +65,155 @@ const generateLead = async () => {
 </script>
 
 <template>
-<section>
+
+<div>
+  <div class="breadcrumb-top mt-4 mb-4">
+
+    <span class="is-left">
+        <nav class="breadcrumb" aria-label="breadcrumbs">
+          <ul>
+            <li><a href="/"><i class="fa fa-home" aria-hidden="true"></i></a></li>
+            <li><a href="/">{{ props.propsObj.title(props.propsObj.city) }} </a></li>
+            <li><a :href="props.propsObj.data">{{ props.propsObj.meta.page_title }} in {{ props.propsObj.title(props.propsObj.city) }}</a></li>
+            <li class="is-active"> <a href="javascript:;" aria-current="page">{{ props.propsObj.contents.length }}</a></li>
+          </ul>
+        </nav>
+       
+      </span>
+
+            <!-- <span>
+              <span>
+                <a href="#">Home</a>
+              </span> » <span>
+                <a href="#">Marketing</a>
+              </span> » <span class="breadcrumb_last" aria-current="page">3 Cs of Marketing: Company, Customers, and Competition</span>
+            </span> -->
+          </div>
+          <section class="et-heading mt-4 mb-4">
+            <h2 class="title">{{ props.propsObj.meta.page_title }} in {{ props.propsObj.title(props.propsObj.city) }}</h2>
+            <p class="des" v-html="props.propsObj.meta?.page_content?.replace(new RegExp('cityName', 'g'), props.propsObj.title(props.propsObj.city))"></p>
+
+          </section>
+          <div class="columns">
+            <div class="column is-9">
+              <!-- 80% width on larger screens -->
+              <!-- <div class="box"> -->
+                <div class="box media" v-for="(b, index) in props.propsObj.contents" :key="index">
+                  <div class="media-left">
+                    <a :href="`/${props.propsObj.slug(props.propsObj.city)}/${b?.business_slug}-biz-${b?._id.substr(16)}`" >
+                      <figure class="image custom-image">
+                        <img :src="`${b?.business_images[0] ?? '../Image_not_available.png'}`" alt="Business Image" />
+                      </figure>
+                    </a>     
+
+                    <!-- <figure class="image ct-thumb-image">
+                      <img :src="'/'+`${b?.business_images[0] ?? '../Image_not_available.png'}`" alt="">
+                    </figure> -->
+                  </div>
+                  <div class="media-content">
+                    <h3 class="title is-3">
+
+                      <a class="media-content-title"
+                      :href="`/${props.propsObj.slug(props.propsObj.city)}/${b?.business_slug}-biz-${b?._id.substr(16)}`"
+                      :title="`${b.business_name}`">
+                        {{ b.business_name }}
+                      </a>     
+                    </h3>
+                    <div class="meta-info">
+                      <div class="location-info mb-2">
+                        <i class="fa fa-map-marker mr-2"></i> 
+                        <span>{{ b.business_address }}</span><span v-if="b.business_address">, </span>
+                        <span>{{ b.business_locality }}</span><span v-if="b.business_locality">, </span>
+                        <span>{{ b.business_city }}</span><span v-if="b.business_city">, </span>
+                        <span>{{ b.business_state }}</span><span v-if="b.business_state">, </span>
+                        <span>{{ b.business_pin }}</span>
+                      </div>
+                      <div class="contact-info">
+                        <span class="media-content-phone" v-if="b.business_phone">
+                          <i class="fas fa-phone mr-2"></i> 
+                            <a
+                          :href="'tel: ' + b.business_phone"
+                          target="_blank"
+                          rel="noopener"
+                        >{{ b.business_phone }}</a>
+                        </span> 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <!-- </div> -->
+              <!-- <div class="box"> -->
+                <!-- <div class="box media">
+                  <div class="media-left">
+                    <figure class="image ct-thumb-image">
+                      <img src="https://demo.themesberg.com/spaces/assets/img/meeting-office.jpg" alt="">
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <h3 class="title is-3">
+                      <a href="#" title="Windows 10 LTSC bloatware-free promise challenged by recent security updates">Windows 10 LTSC bloatware-free promise challenged by recent security updates</a>
+                    </h3>
+                    <div class="meta-info">
+                      <div class="location-info mb-2">
+                        <i class="fa fa-map-marker mr-2"></i> 92/12, Sector 15 Part 1, Gurugram, Haryana: 122001
+                      </div>
+                      <div class="contact-info">
+                        <i class="fas fa-phone mr-2"></i> 7947125176
+                      </div>
+                    </div>
+                  </div>
+                </div> -->
+              <!-- </div>
+              <div class="box"> -->
+                <!-- <div class="box media">
+                  <div class="media-left">
+                    <figure class="image ct-thumb-image">
+                      <img src="https://demo.themesberg.com/spaces/assets/img/meeting-office.jpg" alt="">
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <h3 class="title is-3">
+                      <a href="#" title="Windows 10 LTSC bloatware-free promise challenged by recent security updates">Windows 10 LTSC bloatware-free promise challenged by recent security updates</a>
+                    </h3>
+                    <div class="meta-info">
+                      <div class="location-info mb-2">
+                        <i class="fa fa-map-marker mr-2"></i> 92/12, Sector 15 Part 1, Gurugram, Haryana: 122001
+                      </div>
+                      <div class="contact-info">
+                        <i class="fas fa-phone mr-2"></i> 7947125176
+                      </div>
+                    </div>
+                  </div>
+                </div> -->
+              <!-- </div> -->
+            </div>
+            <div class="column is-3">
+              <form @submit.prevent="generateLead">
+              <h1 class="title is-3 is-size-5">Query Form</h1>
+              <button type="link" class="button is-light is-small" :class="{'is-primary': (showMessageForSuccessClass && !universalErrors), 'is-danger': (showMessageForErrorClass && universalErrors)}" v-show="showMessage"> {{ message }}</button>
+              <input type="text" class="input is-small" 
+                :class="{'mt-4 form-field': true, 'dirty': leadErrors.name}" 
+                v-model="leadsFormData.name"  
+                placeholder="Your Name"/>
+                
+                <input type="text" class="input is-small" 
+                :class="{'mt-4 form-field': true, 'dirty': leadErrors.phone}" 
+                v-model="leadsFormData.phone"  
+                placeholder="Your Phone Number"
+                @input="onlyIndianMobile"
+                />
+
+                <input type="text" class="input is-small" 
+                :class="{'mt-4 form-field': true, 'dirty': leadErrors.email}" 
+                v-model="leadsFormData.email"  
+                placeholder="Your Email"/>
+                <button type="submit" class="button is-primary is-small mt-4">Get Best Deal</button> 
+            </form>
+            </div>
+          </div>
+</div>
+
+<!-- <section>
       <span class="is-left">
         <nav class="breadcrumb" aria-label="breadcrumbs">
           <ul>
@@ -114,14 +262,7 @@ const generateLead = async () => {
               </span>
                 
                 </div>
-                <!-- <div v-if="b.business_services.length > 0" class="mt-2">
-                  <div class="buttons">
-                    <button class="button is-primary is-ligh is-small"
-                      v-for="service in b.business_services" :key="service">
-                      {{ service }}
-                    </button>
-                  </div>
-                </div> -->
+              
               </div>
             </di>
           </div>
@@ -152,9 +293,37 @@ const generateLead = async () => {
           </div>
         </aside>
       </div>
-    </section>
+    </section> -->
 </template>
 <style scoped>
+  .ct-thumb-image {
+    height: auto;
+    width: 320px;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .box .media {
+      display: inline-block;
+    }
+
+    /* Apply align-items and text-align to a specific element or container inside .media */
+    .media {
+      align-items: inherit;
+      text-align: inherit;
+    }
+
+    .ct-thumb-image {
+      text-align: center;
+      display: inline;
+    }
+
+    .media-content {
+      margin-top: 20px;
+    }
+  }
+
+
+
 .media:hover {
   background-color: #e0e0e0;
 }

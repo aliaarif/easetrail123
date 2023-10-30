@@ -1,14 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
-  css: ["~/assets/css/main.css", "~/assets/css/skeleton.css"],
+  css: ["~/assets/css/main.css", "~/assets/css/skeleton.css", 'animate.css/animate.min.css'],
   modules: ["@formkit/nuxt", "@pinia/nuxt", '@pinia-plugin-persistedstate/nuxt', "nuxt3-leaflet", "nuxt-vue3-google-signin"],
-  plugins: [],
+  plugins: ['~/plugins/domReady.js', '~/plugins/custom-tabs-accordion.js'],
   googleSignIn: {
-    clientId: '699315456473-u67qba4e7jk67qtric02vgbk8dn21utq.apps.googleusercontent.com'
+    clientId: '661329983036-oc2q7gjc12ekg9qnkgid9g9oiakt0abi.apps.googleusercontent.com'
   },
   runtimeConfig: {
-    googleClientId: '699315456473-u67qba4e7jk67qtric02vgbk8dn21utq.apps.googleusercontent.com',
+    googleClientId: '661329983036-oc2q7gjc12ekg9qnkgid9g9oiakt0abi.apps.googleusercontent.com',
     dburl: process.env.DAATABASE_URL,
     dbName: process.env.DBNAME,
     user: process.env.DBUSERNAME,
@@ -24,9 +24,15 @@ export default defineNuxtConfig({
     // layoutTransition:{name:'page', mode:'in-out'},
     head: {
       charset: "utf-16",
-      viewport: "width=500, initial-scale=1",
+
+      // viewport: "width=500, initial-scale=1",
+
       title: "Easetrail - Write your title here for Home Page",
       meta: [
+         {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1",
+        },
         {
           name: "description",
           content: "Easetrail - Your go-to destination for daily needs. Find a wide range of services from beauty and wellness to home repairs, travel & accommodations, and educational institutions.",

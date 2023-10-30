@@ -1,6 +1,8 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth";
 import { useAuthDataStore } from "@/stores/auth-data";
+import { useCartStore } from "@/stores/cart";
+const cartStore = useCartStore();
 const {
   module,
   edit,
@@ -86,12 +88,12 @@ const setModuleAndAction = (mod, act, edit) => {
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
         </a>
-        <a @click="navigateTo('/')" href="/" class="navbar-item" style="position:relative; left:-20px;">
+        <a @click="navigateTo('/')" href="/" class="navbar-item">
           <img
-            src="https://www.licious.in/image/rebranding/svg/licious-logo.svg"
+            src="/img/brand/logo.png"
             alt="Logo"
-            width="112"
-            height="28"
+            width="200"
+            height="100"
           />
         </a>  
 
@@ -110,26 +112,6 @@ const setModuleAndAction = (mod, act, edit) => {
         </a>
 
       </div>
-    <!-- <div class="navbar-menu" id="navbarMenu">
-      <div class="navbar-end">
-        <a class="navbar-item" href="#">Home</a>
-        <a class="navbar-item" href="#">Services</a>
-        <a class="navbar-item" href="#">Contact</a>
-        <div class="navbar-item is-hidden-touch">
-          <div class="field">
-            <p class="control">
-              <input class="input" type="text" placeholder="Select Location">
-            </p>
-          </div>
-        </div>
-        <div class="navbar-item">
-          <div class="buttons">
-            <a class="button is-light" href="#">Login</a>
-            <a class="button is-primary" href="#">Register</a>
-          </div>
-        </div>
-      </div>
-    </div> -->
     <div class="navbar-menu" id="navbarMenu" >
         <div class="navbar-start" v-if="!authStore.isAuthenticated">
           <nuxt-link to="/login" class="navbar-item" >Login</nuxt-link>
@@ -180,9 +162,16 @@ const setModuleAndAction = (mod, act, edit) => {
       
       <div class="navbar-menu">
         <div class="navbar-end">
-          <div class="mt-1 navbar-item has-dropdown is-hoverable is-hidden-touch" v-if="props.firstParam.currentRoute.value.name != 'dashboard'">
-            <Search />
+          <div class="navbar-item" v-if="cartStore.cart.length > 0" >
+            <nuxt-link to="/cart" class="navbar-item">   <span class="file-icon">
+              <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+              </span> {{ cartStore.cart.length }} ({{ cartStore.cartTotal.toFixed(2) }})</nuxt-link>
           </div>
+        
+
+          <!-- <div class="mt-1 navbar-item has-dropdown is-hoverable is-hidden-touch" v-if="props.firstParam.currentRoute.value.name != 'dashboard'">
+            <Search />
+          </div> -->
           <div class="navbar-item" v-if="!authStore.isAuthenticated">
             <nuxt-link to="/login" class="navbar-item">Login</nuxt-link>
           </div>
